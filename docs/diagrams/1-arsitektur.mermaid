@@ -1,0 +1,46 @@
+flowchart TB
+    subgraph SEPOLIA["ETHEREUM SEPOLIA — source chain"]
+        USER1["User wallet"]
+        PROBE["AniWereProbe.sol<br/>kontrak kita, logic minimal"]
+        AAVE["Aave V3 Pool<br/>bukan kontrak kita"]
+        EV1["EVENT<br/>PositionProbedForCover<br/>user, collateral, debt, HF"]
+        EV2["EVENT<br/>LiquidationCall<br/>event asli Aave"]
+    end
+
+    subgraph WORKER["OFF-CHAIN WORKER — kurir, tidak dipercaya"]
+        LISTEN["1. Listen eth_getLogs"]
+        WAIT["2. Tunggu block ter-attest<br/>di Creditcoin"]
+        BUILD["3. Proof Builder<br/>continuity proof + merkle proof"]
+        SUBMIT["4. Submit ke ASC"]
+    end
+
+    subgraph CTC["CREDITCOIN — control plane, semua business logic"]
+        PRECOMPILE["Block Prover Precompile<br/>verifikasi SINKRON"]
+        ASC["AniWereASC.sol<br/>policy, snapshot, threshold"]
+        VAULT["CoverVault.sol<br/>pegang premi, bayar klaim"]
+        STORE["Storage<br/>Snapshot + Policy"]
+    end
+
+    USER1 -->|"probe(user)"| PROBE
+    PROBE -->|"staticcall getUserAccountData"| AAVE
+    PROBE --> EV1
+    AAVE --> EV2
+
+    EV1 --> LISTEN
+    EV2 --> LISTEN
+    LISTEN --> WAIT
+    WAIT --> BUILD
+    BUILD --> SUBMIT
+
+    SUBMIT --> ASC
+    ASC <-->|"proof valid?<br/>kalau gagal REVERT"| PRECOMPILE
+    ASC --> STORE
+    ASC -->|"payout"| VAULT
+    VAULT -->|"CTC ke holder"| USER1
+
+    style SEPOLIA fill:#fff4e6,stroke:#e8a13a
+    style WORKER fill:#f0f0f0,stroke:#999
+    style CTC fill:#e8f4ff,stroke:#3a7ae8
+    style PRECOMPILE fill:#d4edda,stroke:#28a745
+    style EV1 fill:#ffe8cc
+    style EV2 fill:#ffe8cc

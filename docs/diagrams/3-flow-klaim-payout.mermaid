@@ -1,0 +1,41 @@
+sequenceDiagram
+    autonumber
+    actor U as User
+    participant AV as Aave V3 Pool<br/>(Sepolia)
+    actor L as Liquidator
+    participant W as Worker
+    participant PC as Block Prover<br/>Precompile
+    participant ASC as AniWereASC<br/>(Creditcoin)
+    participant V as CoverVault
+
+    Note over U,AV: Harga collateral turun, HF jatuh di bawah 1
+
+    L->>AV: liquidationCall(user)
+    AV->>AV: emit LiquidationCall
+    Note right of AV: Event ASLI Aave.<br/>Bukan kita yang bikin.
+
+    Note over AV,W: Tunggu Ethereum finality (~13 menit)
+
+    W->>W: Deteksi LiquidationCall
+    W->>W: Tunggu attestation di Creditcoin
+    W->>W: Generate continuity + merkle proof
+    W->>ASC: submitLiquidationClaim(rawTx, proofs)
+
+    rect rgb(230, 245, 233)
+    Note over ASC,V: SATU transaksi Creditcoin — verifikasi + payout sekaligus
+    ASC->>PC: 1. Verifikasi continuity + merkle proof
+    PC-->>ASC: Transaksi terbukti ada di block Ethereum
+    ASC->>ASC: 2. Decode receipt log, ekstrak address user
+    ASC->>ASC: 3. Cek Policy: ada? aktif? belum expired?<br/>belum diklaim?
+    alt Policy valid
+        ASC->>V: 4. Transfer payout
+        V->>U: CTC masuk ke wallet
+        ASC->>ASC: 5. claimed = true
+    else Policy tidak valid
+        ASC-->>W: REVERT
+    end
+    end
+
+    ASC-->>U: Notifikasi payout
+
+    Note over U,V: User TIDAK melakukan apa-apa.<br/>Tidak ada yang meng-approve klaim ini.<br/>Tidak ada oracle yang bisa dibohongi.

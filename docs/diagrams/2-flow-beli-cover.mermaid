@@ -1,0 +1,41 @@
+sequenceDiagram
+    autonumber
+    actor U as User
+    participant FE as Frontend
+    participant PR as AniWereProbe<br/>(Sepolia)
+    participant AV as Aave V3 Pool
+    participant W as Worker
+    participant PC as Block Prover<br/>Precompile
+    participant ASC as AniWereASC<br/>(Creditcoin)
+
+    U->>FE: Connect wallet
+    FE->>PR: probe(user)
+    Note over U,PR: User approve tx di Sepolia
+    PR->>AV: getUserAccountData(user)
+    AV-->>PR: collateral, debt, healthFactor
+    PR->>PR: emit PositionProbedForCover
+
+    Note over PR,W: Tunggu Ethereum finality (~13 menit)
+
+    W->>W: Deteksi event via eth_getLogs
+    W->>W: Polling sampai block ter-attest di Creditcoin
+    W->>W: Generate continuity proof + merkle proof
+    W->>ASC: submitPositionProof(rawTx, merkle, continuity)
+
+    rect rgb(230, 245, 233)
+    Note over ASC,PC: SATU transaksi Creditcoin (~15 detik)
+    ASC->>PC: verifikasi proof
+    alt Proof valid
+        PC-->>ASC: transaksi terverifikasi
+        ASC->>ASC: decode event, simpan Snapshot
+    else Proof palsu
+        PC-->>ASC: REVERT
+    end
+    end
+
+    ASC-->>FE: Snapshot verified + block number
+    FE-->>U: Tampilkan HF terverifikasi
+
+    U->>ASC: buyCover(coverAmount, duration) + premi
+    ASC->>ASC: Cek solvency, kunci modal, simpan Policy
+    ASC-->>U: Policy aktif
