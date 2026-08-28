@@ -1,19 +1,14 @@
 import type { Metadata } from "next";
-import { Archivo, IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
+import { IBM_Plex_Mono, Poppins } from "next/font/google";
 import "./globals.css";
 import { Nav } from "./_components/Nav";
 import { WALLET } from "@/lib/data";
 
-/** Angka besar dan judul. Dipilih karena figure-nya tegas saat dipakai display size. */
-const archivo = Archivo({
-  variable: "--font-archivo",
+/** Geometric sans, mengikuti referensi. Dipakai untuk judul maupun teks. */
+const poppins = Poppins({
+  variable: "--font-poppins",
   subsets: ["latin"],
-});
-
-const plexSans = IBM_Plex_Sans({
-  variable: "--font-plex-sans",
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
+  weight: ["400", "500", "600", "700"],
 });
 
 /** Hash, block number, alamat. Semua yang harus bisa dibaca karakter per karakter. */
@@ -33,51 +28,66 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${archivo.variable} ${plexSans.variable} ${plexMono.variable} h-full antialiased`}
+      className={`${poppins.variable} ${plexMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col font-sans text-[14px] leading-normal">
-        <div className="mx-auto w-full max-w-[1320px] px-5 pt-5 pb-14 sm:px-6">
-          <header className="flex flex-wrap items-center gap-3">
-            <div className="mr-auto flex items-center gap-2.5">
-              <div className="grid h-[34px] w-[34px] place-items-center rounded-[10px] bg-ink font-display text-[15px] font-bold text-ground">
-                A
+      <body className="flex min-h-full flex-col bg-ground font-sans text-[14px] leading-normal">
+        <div className="mx-auto w-full max-w-[1400px] p-4 sm:p-6">
+          {/* Satu panel besar membulat, seperti di referensi. */}
+          <div className="rounded-[28px] bg-panel px-5 py-6 shadow-soft sm:px-8 sm:py-7">
+            <header className="flex flex-wrap items-center gap-3">
+              <div className="mr-auto flex items-center gap-3">
+                <div className="grid h-11 w-11 place-items-center rounded-2xl bg-accent font-display text-[17px] font-semibold text-white">
+                  A
+                </div>
+                <div>
+                  <b className="block font-display text-[19px] leading-tight font-semibold tracking-[-0.01em]">
+                    AniWere
+                  </b>
+                  <span className="text-[12.5px] text-ink-3">
+                    Parametric liquidation cover
+                  </span>
+                </div>
               </div>
-              <div>
-                <b className="block font-display text-[16px] leading-tight font-semibold tracking-[-0.01em]">
-                  AniWere
-                </b>
-                <span className="text-[12px] text-ink-3">
-                  Parametric liquidation cover
-                </span>
-              </div>
-            </div>
 
-            <NetworkChip label="Sepolia · synced" tone="safe" />
-            <NetworkChip label="Creditcoin CC3" tone="proof" />
-            <span className="inline-flex items-center rounded-full border border-line bg-surface px-[11px] py-1.5 font-mono text-[12px] text-ink-2">
-              {WALLET}
-            </span>
-          </header>
+              <Pill>
+                <Dot className="bg-safe" />
+                Sepolia · synced
+              </Pill>
+              <Pill>
+                <Dot className="bg-accent" />
+                Creditcoin CC3
+              </Pill>
+              <Pill mono>{WALLET}</Pill>
+            </header>
 
-          <Nav />
+            <Nav />
 
-          <main>{children}</main>
+            <main>{children}</main>
+          </div>
         </div>
       </body>
     </html>
   );
 }
 
-function NetworkChip({ label, tone }: { label: string; tone: "safe" | "proof" }) {
+function Pill({
+  children,
+  mono = false,
+}: {
+  children: React.ReactNode;
+  mono?: boolean;
+}) {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-[11px] py-1.5 text-[12px] whitespace-nowrap text-ink-2">
-      <i
-        aria-hidden
-        className={`h-1.5 w-1.5 shrink-0 rounded-full ${
-          tone === "safe" ? "bg-safe" : "bg-proof"
-        }`}
-      />
-      {label}
+    <span
+      className={`inline-flex items-center gap-2 rounded-full bg-surface px-4 py-2.5 text-[12.5px] whitespace-nowrap text-ink-2 shadow-card ${
+        mono ? "font-mono" : ""
+      }`}
+    >
+      {children}
     </span>
   );
+}
+
+function Dot({ className }: { className: string }) {
+  return <i aria-hidden className={`h-[7px] w-[7px] shrink-0 rounded-full ${className}`} />;
 }

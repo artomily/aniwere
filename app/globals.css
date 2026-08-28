@@ -1,69 +1,117 @@
 @import "tailwindcss";
 
 /*
- * Design token AniWere.
- *
- * Aturan warna yang tidak boleh dilanggar: --safe / --caution / --critical
- * punya ARTI, bukan selera. Jangan pernah memakainya sebagai aksen dekoratif,
- * karena user membaca bahaya posisinya dari warna-warna itu.
- *
- * --proof dipakai khusus untuk hal yang sudah terbukti secara kriptografis.
- * Kalau sesuatu belum diverifikasi, jangan diberi warna ini.
+ * Palet diambil dari referensi dashboard yang dipilih:
+ * ground abu-lavender, kartu putih membulat, aksen biru terang,
+ * dua kartu gradien mesh, garis grafik coral + periwinkle.
  */
 :root {
-  --ground: #f4f6fa;
+  --ground: #e8eaf2;
+  --panel: #f2f4f8;
   --surface: #ffffff;
-  --surface-2: #edf1f7;
-  --sunken: #e4e9f2;
-  --line: #dde3ed;
-  --line-strong: #c6cfde;
+  --surface-2: #eef0f6;
+  --sunken: #e9ecf3;
+  --line: #e6e9f0;
+  --line-strong: #d3d8e4;
 
-  --ink: #141a26;
-  --ink-2: #4a566b;
-  --ink-3: #7c8798;
+  --ink: #1a1d2e;
+  --ink-2: #6b7186;
+  --ink-3: #9aa0b0;
 
-  --proof: #0a87a3;
-  --proof-wash: #e1f3f8;
+  --accent: #2563eb;
+  --accent-soft: #e8f0fe;
 
-  --safe: #12805c;
-  --safe-wash: #dff0e9;
-  --caution: #b4700a;
-  --caution-wash: #faedd8;
-  --critical: #b93636;
-  --critical-wash: #f8e3e3;
+  /* Dua warna garis grafik, sama seperti di referensi. */
+  --coral: #f2645a;
+  --periwinkle: #6b7fe8;
 
-  --shadow-card: 0 1px 2px rgb(20 26 38 / 0.05), 0 8px 24px -12px rgb(20 26 38 / 0.14);
+  --safe: #16a085;
+  --safe-soft: #e2f5f1;
+  --caution: #ef8c3b;
+  --caution-soft: #fdeee1;
+  --critical: #f2645a;
+  --critical-soft: #fdeae8;
+
+  --shadow-card: 0 1px 2px rgb(26 29 46 / 0.04), 0 12px 32px -14px rgb(26 29 46 / 0.16);
+  --shadow-soft: 0 8px 28px -16px rgb(26 29 46 / 0.22);
+
+  /* Teks di atas kartu gradien. Wajib token: gradiennya diredam di dark,
+     jadi tinta gelap yang di-hardcode akan hilang kontrasnya. */
+  --mesh-ink: #1a1d2e;
+  --mesh-ink-soft: rgb(26 29 46 / 0.72);
+  --mesh-chip: rgb(255 255 255 / 0.7);
+
+  /* Mesh gradient hangat: ungu, jingga, merah muda. */
+  --mesh-warm:
+    radial-gradient(at 18% 12%, #c3a4ee 0%, transparent 58%),
+    radial-gradient(at 88% 16%, #f47a4e 0%, transparent 55%),
+    radial-gradient(at 12% 92%, #f06fa6 0%, transparent 58%),
+    radial-gradient(at 82% 88%, #f9c9ba 0%, transparent 55%),
+    linear-gradient(135deg, #e9b8e0 0%, #f6dcd2 100%);
+
+  /* Mesh gradient dingin: biru, sian, hijau. */
+  --mesh-cool:
+    radial-gradient(at 14% 18%, #7cb6f6 0%, transparent 56%),
+    radial-gradient(at 90% 14%, #2f80ed 0%, transparent 52%),
+    radial-gradient(at 10% 88%, #5ed6a8 0%, transparent 56%),
+    radial-gradient(at 84% 90%, #45a8ea 0%, transparent 55%),
+    linear-gradient(135deg, #a9dcf4 0%, #cfeaf7 100%);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --ground: #0f1420;
-    --surface: #171e2c;
-    --surface-2: #1d2637;
-    --sunken: #121926;
-    --line: #283245;
-    --line-strong: #3a465c;
+    --ground: #14161f;
+    --panel: #1a1d28;
+    --surface: #212533;
+    --surface-2: #272c3b;
+    --sunken: #1b1f2b;
+    --line: #2e3444;
+    --line-strong: #3d445a;
 
-    --ink: #eef2f8;
-    --ink-2: #a3afc2;
-    --ink-3: #76839a;
+    --ink: #eef0f6;
+    --ink-2: #a5abbd;
+    --ink-3: #7b8296;
 
-    --proof: #3fc5e0;
-    --proof-wash: #0e2c36;
+    --accent: #5b8def;
+    --accent-soft: #1c2740;
 
-    --safe: #3fbe92;
-    --safe-wash: #102e25;
-    --caution: #e0a03c;
-    --caution-wash: #332512;
-    --critical: #ec6f6f;
-    --critical-wash: #331b1b;
+    --coral: #f2786f;
+    --periwinkle: #8b9bf0;
 
-    --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3), 0 10px 28px -14px rgb(0 0 0 / 0.6);
+    --safe: #2fbfa2;
+    --safe-soft: #10302b;
+    --caution: #f0994d;
+    --caution-soft: #33230f;
+    --critical: #f2786f;
+    --critical-soft: #331b1a;
+
+    --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3), 0 12px 32px -16px rgb(0 0 0 / 0.7);
+    --shadow-soft: 0 8px 28px -16px rgb(0 0 0 / 0.6);
+
+    --mesh-ink: #f4f6fb;
+    --mesh-ink-soft: rgb(244 246 251 / 0.75);
+    --mesh-chip: rgb(255 255 255 / 0.16);
+
+    /* Gradien dipertahankan supaya identitasnya tetap sama, hanya diredam. */
+    --mesh-warm:
+      radial-gradient(at 18% 12%, #7a5aa8 0%, transparent 58%),
+      radial-gradient(at 88% 16%, #b25436 0%, transparent 55%),
+      radial-gradient(at 12% 92%, #a94b72 0%, transparent 58%),
+      radial-gradient(at 82% 88%, #a87d70 0%, transparent 55%),
+      linear-gradient(135deg, #8d6b88 0%, #6d5a55 100%);
+
+    --mesh-cool:
+      radial-gradient(at 14% 18%, #4a7bab 0%, transparent 56%),
+      radial-gradient(at 90% 14%, #2159a5 0%, transparent 52%),
+      radial-gradient(at 10% 88%, #3d8f74 0%, transparent 56%),
+      radial-gradient(at 84% 90%, #2f739e 0%, transparent 55%),
+      linear-gradient(135deg, #4d7f96 0%, #52707e 100%);
   }
 }
 
 @theme inline {
   --color-ground: var(--ground);
+  --color-panel: var(--panel);
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
   --color-sunken: var(--sunken);
@@ -74,21 +122,29 @@
   --color-ink-2: var(--ink-2);
   --color-ink-3: var(--ink-3);
 
-  --color-proof: var(--proof);
-  --color-proof-wash: var(--proof-wash);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+
+  --color-mesh-ink: var(--mesh-ink);
+  --color-mesh-ink-soft: var(--mesh-ink-soft);
+  --color-mesh-chip: var(--mesh-chip);
+
+  --color-coral: var(--coral);
+  --color-periwinkle: var(--periwinkle);
 
   --color-safe: var(--safe);
-  --color-safe-wash: var(--safe-wash);
+  --color-safe-soft: var(--safe-soft);
   --color-caution: var(--caution);
-  --color-caution-wash: var(--caution-wash);
+  --color-caution-soft: var(--caution-soft);
   --color-critical: var(--critical);
-  --color-critical-wash: var(--critical-wash);
+  --color-critical-soft: var(--critical-soft);
 
-  --font-display: var(--font-archivo);
-  --font-sans: var(--font-plex-sans);
+  --font-display: var(--font-poppins);
+  --font-sans: var(--font-poppins);
   --font-mono: var(--font-plex-mono);
 
   --shadow-card: var(--shadow-card);
+  --shadow-soft: var(--shadow-soft);
 }
 
 body {
@@ -96,7 +152,19 @@ body {
   color: var(--ink);
 }
 
-/* Angka yang berjajar harus sejajar. Dipakai di semua stat dan tabel. */
+.mesh-warm {
+  background: var(--mesh-warm);
+}
+.mesh-cool {
+  background: var(--mesh-cool);
+}
+
+/* Titik-titik halus di latar grafik, seperti di referensi. */
+.dotgrid {
+  background-image: radial-gradient(var(--line-strong) 1px, transparent 1px);
+  background-size: 12px 12px;
+}
+
 .tnum {
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;

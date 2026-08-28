@@ -104,7 +104,7 @@ export function BuyCover({ freeCapital, snapshotAgeMinutes, healthFactor }: Prop
             >
               Cover amount
             </label>
-            <div className="flex items-center gap-2 rounded-xl border border-line-strong bg-surface px-3.5 py-2.5 focus-within:border-proof">
+            <div className="flex items-center gap-2 rounded-2xl border border-line-strong bg-surface px-4 py-3 focus-within:border-accent">
               <input
                 id="amt"
                 inputMode="decimal"
@@ -130,9 +130,9 @@ export function BuyCover({ freeCapital, snapshotAgeMinutes, healthFactor }: Prop
                   type="button"
                   aria-pressed={days === d}
                   onClick={() => setDays(d)}
-                  className={`cursor-pointer rounded-xl border px-3.5 py-2.5 text-[12.5px] ${
+                  className={`cursor-pointer rounded-2xl border px-4 py-3 text-[12.5px] ${
                     days === d
-                      ? "border-proof bg-proof-wash font-semibold text-proof"
+                      ? "border-accent bg-accent font-semibold text-white"
                       : "border-line-strong bg-surface text-ink-2 hover:text-ink"
                   }`}
                 >
@@ -143,7 +143,7 @@ export function BuyCover({ freeCapital, snapshotAgeMinutes, healthFactor }: Prop
           </div>
         </div>
 
-        <div className="mt-[18px] overflow-hidden rounded-xl border border-line">
+        <div className="mt-[18px] overflow-hidden rounded-2xl border border-line">
           <QuoteRow label={`Premium · ${PARAMS.premiumBps / 100}% flat`}>
             {formatCtc(premium)} CTC
           </QuoteRow>
@@ -155,7 +155,7 @@ export function BuyCover({ freeCapital, snapshotAgeMinutes, healthFactor }: Prop
         </div>
 
         {!fitsVault && amount > 0 && (
-          <p className="mt-3 rounded-xl bg-critical-wash px-3.5 py-3 text-[12.5px] text-critical">
+          <p className="mt-3 rounded-2xl bg-critical-soft px-3.5 py-3 text-[12.5px] text-critical">
             Cover of {formatCtc(amount, 0)} CTC is more than the{" "}
             {formatCtc(freeCapital, 0)} CTC the vault has free. Lower the amount, or wait
             for more underwriter capital — the contract will reject this purchase.
@@ -165,7 +165,7 @@ export function BuyCover({ freeCapital, snapshotAgeMinutes, healthFactor }: Prop
         <button
           type="button"
           disabled={!canBuy}
-          className="mt-4 w-full cursor-pointer rounded-xl bg-ink px-4 py-3.5 text-[14px] font-semibold text-ground hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+          className="mt-4 w-full cursor-pointer rounded-2xl bg-accent px-4 py-3.5 text-[14px] font-semibold text-white shadow-card hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
         >
           Pay premium on Creditcoin
         </button>

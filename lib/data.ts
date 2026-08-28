@@ -98,16 +98,22 @@ export const vault: VaultState = {
  * Riwayat health factor dari snapshot yang benar-benar tersimpan on-chain.
  * Tiap titik adalah satu proof, bukan hasil polling.
  */
-export const history: { date: string; hf: number; block: number }[] = [
-  { date: "14 Aug", hf: 1.86, block: 11_501_204 },
-  { date: "16 Aug", hf: 1.79, block: 11_515_882 },
-  { date: "18 Aug", hf: 1.68, block: 11_530_119 },
-  { date: "20 Aug", hf: 1.72, block: 11_544_760 },
-  { date: "22 Aug", hf: 1.51, block: 11_552_338 },
-  { date: "24 Aug", hf: 1.43, block: 11_560_907 },
-  { date: "25 Aug", hf: 1.54, block: 11_566_441 },
-  { date: "26 Aug", hf: 1.61, block: 11_571_002 },
-  { date: "now", hf: 1.42, block: 11_576_800 },
+export const history: {
+  date: string;
+  hf: number;
+  /** Utang pada snapshot yang sama. Dipakai sebagai seri kedua di grafik. */
+  debtUsd: number;
+  block: number;
+}[] = [
+  { date: "14 Aug", hf: 1.86, debtUsd: 4_820, block: 11_501_204 },
+  { date: "16 Aug", hf: 1.79, debtUsd: 5_010, block: 11_515_882 },
+  { date: "18 Aug", hf: 1.68, debtUsd: 5_340, block: 11_530_119 },
+  { date: "20 Aug", hf: 1.72, debtUsd: 5_220, block: 11_544_760 },
+  { date: "22 Aug", hf: 1.51, debtUsd: 5_940, block: 11_552_338 },
+  { date: "24 Aug", hf: 1.43, debtUsd: 6_310, block: 11_560_907 },
+  { date: "25 Aug", hf: 1.54, debtUsd: 6_050, block: 11_566_441 },
+  { date: "26 Aug", hf: 1.61, debtUsd: 5_780, block: 11_571_002 },
+  { date: "now", hf: 1.42, debtUsd: 6_240, block: 11_576_800 },
 ];
 
 /** Rantai bukti untuk snapshot terakhir. */

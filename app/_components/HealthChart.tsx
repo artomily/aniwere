@@ -1,30 +1,33 @@
 import { history } from "@/lib/data";
 
-const W = 720;
-const H = 240;
-const PAD = { top: 20, right: 18, bottom: 34, left: 46 };
-
-/** Domain sengaja dimulai di bawah 1.0 supaya garis likuidasi selalu kelihatan. */
-const HF_MIN = 0.8;
-const HF_MAX = 2.0;
+const W = 760;
+const H = 260;
+const PAD = { top: 34, right: 20, bottom: 30, left: 20 };
 
 const x = (i: number, n: number) =>
   PAD.left + (i / (n - 1)) * (W - PAD.left - PAD.right);
 
-const y = (hf: number) => {
-  const t = (hf - HF_MIN) / (HF_MAX - HF_MIN);
-  return H - PAD.bottom - t * (H - PAD.top - PAD.bottom);
-};
+/** Setiap seri diskalakan ke rentangnya sendiri, seperti grafik dua garis di referensi. */
+function scaler(values: number[]) {
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const span = max - min || 1;
+  return (v: number) => {
+    const t = (v - min) / span;
+    // Disisakan 12% di atas dan bawah supaya puncaknya tidak menempel tepi.
+    return H - PAD.bottom - (0.12 + t * 0.76) * (H - PAD.top - PAD.bottom);
+  };
+}
 
 /**
- * Catmull-Rom yang diubah jadi kurva bezier, dengan tension ditahan
- * supaya kurvanya tidak melambung melewati titik data. Grafik risiko
- * tidak boleh menggambar nilai yang tidak pernah terjadi.
+ * Catmull-Rom yang diubah jadi bezier. Tension ditahan supaya kurvanya
+ * tidak melambung melewati titik data — grafik risiko tidak boleh
+ * menggambar nilai yang tidak pernah terjadi.
  */
 function smoothPath(pts: { x: number; y: number }[]) {
   if (pts.length < 2) return "";
   const t = 0.18;
-  let d = `M ${pts[0].x} ${pts[0].y}`;
+  let d = `M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
   for (let i = 0; i < pts.length - 1; i++) {
     const p0 = pts[i - 1] ?? pts[i];
     const p1 = pts[i];
@@ -41,14 +44,23 @@ function smoothPath(pts: { x: number; y: number }[]) {
 
 export function HealthChart() {
   const n = history.length;
-  const pts = history.map((h, i) => ({ x: x(i, n), y: y(h.hf) }));
-  const line = smoothPath(pts);
-  const area = `${line} L ${pts[n - 1].x} ${H - PAD.bottom} L ${pts[0].x} ${H - PAD.bottom} Z`;
-  const last = history[n - 1];
-  const lastPt = pts[n - 1];
+  const yHf = scaler(history.map((h) => h.hf));
+  const yDebt = scaler(history.map((h) => h.debtUsd));
 
-  const gridLines = [1.0, 1.25, 1.5, 1.75];
+  const hfPts = history.map((h, i) => ({ x: x(i, n), y: yHf(h.hf) }));
+  const debtPts = history.map((h, i) => ({ x: x(i, n), y: yDebt(h.debtUsd) }));
+
+  const last = history[n - 1];
+  const lastPt = hfPts[n - 1];
   const ticks = [0, 2, 4, 6, 8];
+
+  /* Pil dijaga tetap di dalam viewBox. Titik terakhir ada di tepi kanan,
+     jadi tanpa clamp separuh pilnya terpotong. */
+  const PILL_W = 132;
+  const pillX = Math.min(
+    Math.max(lastPt.x - PILL_W / 2, PAD.left),
+    W - PAD.right - PILL_W
+  );
 
   return (
     <svg
@@ -58,127 +70,96 @@ export function HealthChart() {
       role="img"
       aria-label={`Health factor across ${n} verified snapshots, from ${history[0].hf.toFixed(
         2
-      )} down to ${last.hf.toFixed(2)}. All points stay above the liquidation line at 1.00.`}
+      )} to ${last.hf.toFixed(2)}, shown against the debt trend over the same snapshots.`}
     >
       <defs>
-        <linearGradient id="hfFill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="var(--proof)" stopOpacity="0.22" />
-          <stop offset="100%" stopColor="var(--proof)" stopOpacity="0.02" />
-        </linearGradient>
+        {/* Pil melayang di atas kartu berwarna sama, jadi butuh bayangan
+            supaya terbaca sebagai lapisan terpisah. */}
+        <filter id="pillShadow" x="-30%" y="-30%" width="160%" height="180%">
+          <feDropShadow
+            dx="0"
+            dy="4"
+            stdDeviation="6"
+            floodColor="#1a1d2e"
+            floodOpacity="0.16"
+          />
+        </filter>
       </defs>
 
-      {/* Zona bahaya digambar lebih dulu supaya selalu berada di belakang data. */}
-      <rect
+      <foreignObject
         x={PAD.left}
-        y={y(1.1)}
+        y={PAD.top}
         width={W - PAD.left - PAD.right}
-        height={H - PAD.bottom - y(1.1)}
-        fill="var(--critical)"
-        opacity="0.09"
-      />
-      <rect
-        x={PAD.left}
-        y={y(1.35)}
-        width={W - PAD.left - PAD.right}
-        height={y(1.1) - y(1.35)}
-        fill="var(--caution)"
-        opacity="0.09"
-      />
-
-      {gridLines.map((g) => (
-        <line
-          key={g}
-          x1={PAD.left}
-          y1={y(g)}
-          x2={W - PAD.right}
-          y2={y(g)}
-          stroke="var(--line)"
-          strokeWidth="1"
-        />
-      ))}
-
-      <line
-        x1={PAD.left}
-        y1={y(1)}
-        x2={W - PAD.right}
-        y2={y(1)}
-        stroke="var(--critical)"
-        strokeWidth="1.5"
-        strokeDasharray="5 4"
-      />
-      <text
-        x={PAD.left + 6}
-        y={y(1) + 14}
-        fontSize="10"
-        fontFamily="var(--font-mono)"
-        fill="var(--critical)"
-        fontWeight="500"
+        height={H - PAD.top - PAD.bottom}
       >
-        Liquidation
-      </text>
+        <div className="dotgrid h-full w-full opacity-60" />
+      </foreignObject>
 
-      {[0.8, 1.0, 1.25, 1.5, 1.75, 2.0].map((g) => (
-        <text
-          key={g}
-          x={PAD.left - 8}
-          y={y(g) + 3.5}
-          fontSize="10"
-          fontFamily="var(--font-mono)"
-          fill="var(--ink-3)"
-          textAnchor="end"
-        >
-          {g.toFixed(2)}
-        </text>
-      ))}
-
-      <path d={area} fill="url(#hfFill)" />
       <path
-        d={line}
+        d={smoothPath(debtPts)}
         fill="none"
-        stroke="var(--proof)"
-        strokeWidth="2.4"
+        stroke="var(--periwinkle)"
+        strokeWidth="3"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-
-      {pts.slice(0, -1).map((p, i) => (
-        <circle
-          key={i}
-          cx={p.x}
-          cy={p.y}
-          r="3.5"
-          fill="var(--surface)"
-          stroke="var(--proof)"
-          strokeWidth="2"
-        />
-      ))}
+      <path
+        d={smoothPath(hfPts)}
+        fill="none"
+        stroke="var(--coral)"
+        strokeWidth="3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
 
       <circle
         cx={lastPt.x}
         cy={lastPt.y}
         r="6"
-        fill="var(--proof)"
-        stroke="var(--surface)"
-        strokeWidth="2.5"
+        fill="var(--surface)"
+        stroke="var(--coral)"
+        strokeWidth="3"
       />
-      <text
-        x={lastPt.x}
-        y={lastPt.y - 15}
-        fontSize="11"
-        fontFamily="var(--font-display)"
-        fontWeight="600"
-        fill="var(--ink)"
-        textAnchor="middle"
-      >
-        {last.hf.toFixed(2)}
-      </text>
+
+      {/* Pil melayang di titik terakhir, seperti tooltip "Week 8" di referensi. */}
+      <g transform={`translate(${pillX}, ${Math.max(4, lastPt.y - 58)})`}>
+        <rect
+          width={PILL_W}
+          height="44"
+          rx="16"
+          fill="var(--surface)"
+          stroke="var(--line)"
+          filter="url(#pillShadow)"
+        />
+        <text
+          x={PILL_W / 2}
+          y="19"
+          textAnchor="middle"
+          fontSize="12.5"
+          fontFamily="var(--font-display)"
+          fontWeight="600"
+          fill="var(--ink)"
+        >
+          Latest snapshot
+        </text>
+        <text
+          x={PILL_W / 2}
+          y="34"
+          textAnchor="middle"
+          fontSize="11"
+          fontFamily="var(--font-mono)"
+          fill="var(--ink-3)"
+        >
+          HF {last.hf.toFixed(2)} · block {last.block.toLocaleString("en-US")}
+        </text>
+      </g>
 
       {ticks.map((i) => (
         <text
           key={i}
           x={x(i, n)}
-          y={H - 10}
-          fontSize="10"
+          y={H - 8}
+          fontSize="11"
           fontFamily="var(--font-mono)"
           fill="var(--ink-3)"
           textAnchor="middle"

@@ -89,7 +89,7 @@ export default function ProofPage() {
         title="Proof explorer"
         sub="Claim payout · policy #0042"
         right={
-          <span className="inline-flex items-center gap-1.5 rounded-lg bg-proof-wash px-2.5 py-1 font-mono text-[11px] font-medium text-proof">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-accent-soft px-2.5 py-1 font-mono text-[11px] font-medium text-accent">
             verified · payout released
           </span>
         }
@@ -106,7 +106,7 @@ export default function ProofPage() {
             key={s.n}
             className={`rounded-xl border px-4 py-[15px] ${
               s.highlight
-                ? "border-proof bg-proof-wash"
+                ? "border-accent bg-accent-soft"
                 : "border-line bg-surface-2"
             }`}
           >
@@ -114,7 +114,7 @@ export default function ProofPage() {
               <span
                 className={
                   s.highlight
-                    ? "text-[10.5px] font-semibold tracking-[0.09em] text-proof uppercase"
+                    ? "text-[10.5px] font-semibold tracking-[0.09em] text-accent uppercase"
                     : ""
                 }
               >
@@ -128,7 +128,7 @@ export default function ProofPage() {
               </span>
               <span
                 className={`inline-flex items-center gap-1 text-[11px] font-semibold ${
-                  s.highlight ? "text-proof" : s.verified ? "text-safe" : "text-ink-3"
+                  s.highlight ? "text-accent" : s.verified ? "text-safe" : "text-ink-3"
                 }`}
               >
                 {s.verified && !s.highlight && <Check />}
@@ -163,7 +163,7 @@ export default function ProofPage() {
         ))}
       </div>
 
-      <p className="mt-[18px] flex items-start gap-2.5 rounded-xl bg-proof-wash px-4 py-3.5 text-[12.5px] leading-relaxed text-proof">
+      <p className="mt-[18px] flex items-start gap-2.5 rounded-xl bg-accent-soft px-4 py-3.5 text-[12.5px] leading-relaxed text-accent">
         <span className="mt-px shrink-0">
           <ClockIcon size={15} />
         </span>

@@ -9,7 +9,7 @@ export function Card({
 }) {
   return (
     <article
-      className={`rounded-[18px] border border-line bg-surface shadow-card ${className}`}
+      className={`rounded-3xl bg-surface shadow-card ${className}`}
     >
       {children}
     </article>
@@ -49,7 +49,7 @@ export function Eyebrow({ children }: { children: ReactNode }) {
  */
 export function ProofChip({ children }: { children: ReactNode }) {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-lg bg-proof-wash px-2.5 py-1 font-mono text-[11px] font-medium whitespace-nowrap text-proof">
+    <span className="inline-flex items-center gap-1.5 rounded-lg bg-accent-soft px-3 py-1.5 font-mono text-[11px] font-medium whitespace-nowrap text-accent">
       <ShieldCheck />
       {children}
     </span>
@@ -65,7 +65,7 @@ export function FactGrid({
 }) {
   return (
     <dl
-      className={`grid grid-cols-[repeat(auto-fit,minmax(132px,1fr))] gap-px overflow-hidden rounded-xl border border-line bg-line ${className}`}
+      className={`grid grid-cols-[repeat(auto-fit,minmax(132px,1fr))] gap-2.5 ${className}`}
     >
       {children}
     </dl>
@@ -84,7 +84,7 @@ export function Fact({
   mono?: boolean;
 }) {
   return (
-    <div className="bg-surface px-[15px] py-[13px]">
+    <div className="rounded-2xl bg-surface-2 px-4 py-3.5">
       <dt className="mb-1.5 text-[11px] text-ink-3">{label}</dt>
       <dd
         className={`tnum m-0 font-semibold ${
@@ -105,7 +105,7 @@ export function Fact({
 /** Kotak untuk hal yang harus disebut walau tidak enak didengar. */
 export function Note({ children }: { children: ReactNode }) {
   return (
-    <p className="mt-4 flex gap-2.5 rounded-xl border border-line bg-sunken px-3.5 py-3 text-[12.5px] leading-relaxed text-ink-2">
+    <p className="mt-4 flex gap-2.5 rounded-2xl bg-surface-2 px-4 py-3.5 text-[12.5px] leading-relaxed text-ink-2">
       <span className="mt-0.5 shrink-0 text-ink-3">
         <InfoIcon />
       </span>
@@ -122,9 +122,9 @@ export function StatePill({
   children: ReactNode;
 }) {
   const tone = {
-    safe: "bg-safe-wash text-safe",
-    caution: "bg-caution-wash text-caution",
-    critical: "bg-critical-wash text-critical",
+    safe: "bg-safe-soft text-safe",
+    caution: "bg-caution-soft text-caution",
+    critical: "bg-critical-soft text-critical",
   }[risk];
 
   return (

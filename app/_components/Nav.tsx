@@ -13,7 +13,7 @@ export function Nav() {
   const pathname = usePathname();
 
   return (
-    <nav className="mt-[18px] mb-5 flex gap-0.5 overflow-x-auto border-b border-line">
+    <nav className="mt-6 mb-6 flex gap-1.5 overflow-x-auto">
       {LINKS.map((l) => {
         const active = pathname === l.href;
         return (
@@ -21,10 +21,10 @@ export function Nav() {
             key={l.href}
             href={l.href}
             aria-current={active ? "page" : undefined}
-            className={`-mb-px border-b-2 px-[15px] py-2.5 text-[13.5px] whitespace-nowrap transition-colors ${
+            className={`rounded-full px-4 py-2 text-[13px] whitespace-nowrap transition-colors ${
               active
-                ? "border-proof font-semibold text-ink"
-                : "border-transparent text-ink-3 hover:text-ink"
+                ? "bg-accent font-semibold text-white shadow-card"
+                : "text-ink-3 hover:bg-surface hover:text-ink"
             }`}
           >
             {l.label}
