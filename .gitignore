@@ -32,6 +32,9 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# ...kecuali template-nya. Tanpa baris ini .env.example ikut terabaikan,
+# dan orang yang clone repo tidak punya acuan konfigurasi sama sekali.
+!.env.example
 
 # vercel
 .vercel

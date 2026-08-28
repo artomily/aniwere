@@ -22,8 +22,8 @@ Sudah selesai sebelum sprint mulai:
 
 Belum terpecahkan, dan ini **risiko nomor satu**:
 
-- [ ] Signature asli Block Prover Precompile (`IAttestcoinProver.sol` masih placeholder)
-- [ ] Alamat Aave V3 Pool di Sepolia
+- [x] ~~Signature asli Block Prover Precompile~~ — **terpecahkan 27 Agt.** `verifyAndEmit` di `0x…0FD2`, lihat `docs/ATTESTCOIN.md`. Placeholder-nya salah bentuk; perbaikan masuk Hari 2
+- [x] ~~Alamat Aave V3 Pool di Sepolia~~ — `0x6Ae43d3271ff6888e7Fc43Fd7321a503ff738951`, diverifikasi on-chain, sudah masuk `.env.example`
 - [ ] Apakah likuidasi bisa dipicu di Sepolia
 
 ---
@@ -34,14 +34,16 @@ Belum terpecahkan, dan ini **risiko nomor satu**:
 
 Jangan tulis kode AniWere hari ini. Serius.
 
-- [ ] Setup wallet + faucet Creditcoin Testnet
-- [ ] Jalankan tutorial Cross-Chain Loan dApp **apa adanya**, tanpa modifikasi
-- [ ] Catat signature asli precompile: alamat, nama fungsi, tipe parameter, bentuk return
-- [ ] Catat cara memanggil Proof Builder / Attestcoin SDK
-- [ ] Join channel developer Creditcoin, perkenalkan diri, tanya kalau mentok
-- [ ] Verifikasi alamat Aave V3 Pool di Sepolia, isi `.env` kedua project
+- [ ] Setup wallet + faucet Creditcoin Testnet — **butuh tangan manusia**
+- [ ] Jalankan tutorial Cross-Chain Loan dApp **apa adanya**, tanpa modifikasi — terblokir wallet
+- [x] Catat signature asli precompile: alamat, nama fungsi, tipe parameter, bentuk return
+- [x] Catat cara memanggil Proof Builder / Attestcoin SDK
+- [ ] Join channel developer Creditcoin, perkenalkan diri, tanya kalau mentok — **butuh tangan manusia**
+- [x] Verifikasi alamat Aave V3 Pool di Sepolia, isi `.env` kedua project
 
 **DoD:** ada satu transaksi di Creditcoin Testnet explorer yang membuktikan event Sepolia berhasil diverifikasi.
+
+**Status 27 Agt:** belum ada transaksi, karena wallet belum ada. Tapi jalur verifikasinya sudah dibuktikan lewat `eth_call` ke precompile memakai proof dari transaksi Sepolia sungguhan — precompile mengembalikan `true`, dan empat variasi proof rusak semuanya revert. Yang tersisa hanya mengubahnya jadi transaksi bergas. Risiko nomor satu sudah turun drastis.
 
 **Stop signal:** jam 22:00 belum ada transaksi itu. → Turunkan target ke "satu snapshot posisi terverifikasi", buang cover dan payout dari MVP. Ambil keputusan malam ini.
 
