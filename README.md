@@ -128,6 +128,7 @@ aniwere/
 └── docs/
     ├── PRD.md              Konteks produk
     ├── ATTESTCOIN.md       Catatan validasi live — dokumen paling penting kedua setelah ini
+    ├── DEMO.md             Runbook deploy + demo
     ├── SPRINT.md           Rencana harian
     └── diagrams/
 ```
@@ -215,6 +216,10 @@ npm run worker -- watch                       # loop: pantau probe + likuidasi
 ```
 
 Detail worker ada di [`worker/README.md`](worker/README.md).
+
+Runbook lengkap dari wallet kosong sampai rekaman selesai — termasuk apa yang
+harus dilakukan kalau likuidasi tidak bisa dipicu atau precompile menolak — ada
+di [`docs/DEMO.md`](docs/DEMO.md).
 
 ---
 

@@ -82,13 +82,22 @@ di Creditcoin Testnet. Sisa blocker Hari 2 semuanya butuh wallet dan deployment.
 
 **Goal:** proof bisa dibuat secara terprogram, bukan manual.
 
-- [ ] Scaffold `worker/` (Node + TypeScript + viem)
-- [ ] Listener: `eth_getLogs` pada alamat probe, filter topic0
-- [ ] Attestation waiter: polling Creditcoin sampai block sumber ter-attest, dengan retry dan log yang jelas
-- [ ] Proof builder: generate continuity + merkle proof dari tx hash Hari 2
-- [ ] Simpan hasil proof ke file JSON untuk dipakai testing besok
+- [x] Scaffold `worker/` (Node + TypeScript + viem) — **selesai 4 Sep**
+- [x] Listener: `eth_getLogs` pada alamat probe, filter topic0 — plus `LiquidationCall` dari Aave Pool, disaring ke pemegang polis aktif
+- [x] Attestation waiter: polling sampai block sumber ter-attest, dengan retry dan log yang jelas
+- [x] Proof builder: generate continuity + merkle proof dari tx hash
+- [x] Simpan hasil proof ke file JSON — `npm run worker -- prove <tx> [file]`
 
 **DoD:** `npm run worker` menghasilkan proof yang valid dari tx hash Sepolia.
+
+**Status 4 Sep:** worker selesai dan `status` sudah dijalankan terhadap endpoint
+asli — Sepolia, Proof Builder, dan Creditcoin ketiganya menjawab. Yang belum bisa
+dijalankan hanyalah perintah yang butuh tx hash dari probe yang sudah di-deploy,
+jadi DoD ini tertahan di blocker yang sama dengan Hari 2, bukan di kodenya.
+
+Keputusan yang diambil: REST langsung, bukan `@gluwa/usc-sdk`. Bentuk responsnya
+sudah diverifikasi live, dan SDK menyeret ethers ke project yang seluruh sisanya
+memakai viem. Kalau perlu pindah, hanya `src/attestcoin.ts` yang berubah.
 
 **Stop signal:** attestation waiter tidak pernah selesai. → Cek apakah block sudah final. Kalau memang macet, tanya di channel developer sekarang juga, jangan tunggu besok.
 
@@ -198,6 +207,28 @@ Proof Explorer adalah halaman yang paling menentukan penilaian. Kalau harus memi
 - [ ] Rekam video demo (target 4–5 menit)
 - [ ] Isi form submission DoraHacks
 - [ ] Cek ulang semua link bisa dibuka dari incognito
+
+---
+
+## Rekap 4 September (Hari 9)
+
+Selesai hari ini:
+
+- **Worker** dibangun penuh dan diverifikasi terhadap endpoint asli. Ini deliverable Hari 3 yang tidak pernah dikerjakan.
+- **Framing latency diperbaiki** di CLAUDE.md, README, dan PRD. Pengukuran ketiga hari ini (40 blok di belakang head, 34 di depan `finalized`) mengonfirmasi dua pengukuran sebelumnya. Kalimat "within one Creditcoin block of Ethereum finality" dibuang karena menjanjikan jaminan yang protokolnya tidak berikan.
+- **Frontend berhenti menampilkan angka karangan tanpa label.** Pill blok di header dan panel attestation di Proof Explorer sekarang dibaca dari jaringan asli tanpa wallet; sisanya diberi banner "sample data".
+- **README ditulis ulang** dengan status jujur di paling atas.
+- **`docs/DEMO.md`** — runbook dari wallet kosong sampai rekaman selesai, termasuk apa yang direkam kalau likuidasi tidak bisa dipicu.
+
+Yang tersisa, dan semuanya satu blocker yang sama:
+
+> **Wallet + faucet.** Hari 2, 4, 5, 6 semuanya tertahan di sini. Tidak satu pun tertahan di kode.
+
+Kalau wallet ada besok pagi, `docs/DEMO.md` memperkirakan 90 menit sampai payout
+terbukti. Kalau tidak ada, yang disubmit adalah repo dengan 16 test hijau, jalur
+Attestcoin yang terbukti hidup lewat `eth_call`, worker yang jalan, dan dokumentasi
+yang menyebut sendiri apa yang belum terbukti. Itu bukan submission yang buruk —
+tapi jelas lebih lemah, dan bedanya cuma satu faucet.
 - [ ] **Submit.** Jangan menunggu besok.
 
 ---
