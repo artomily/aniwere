@@ -1,6 +1,6 @@
-# Attestcoin — Catatan Validasi Hari 1
+# Attestcoin — Catatan Validasi
 
-**27 Agustus 2026.** Semua angka di dokumen ini diambil dari pemanggilan live, bukan dari dokumentasi.
+**27 Agustus 2026, diperbarui 4 September.** Semua angka di dokumen ini diambil dari pemanggilan live, bukan dari dokumentasi.
 Kalau ada yang berbeda dengan `docs/PRD.md`, dokumen ini yang benar.
 
 Sumber kanonik: [`gluwa/attestcoin-protocol-examples`](https://github.com/gluwa/attestcoin-protocol-examples)
@@ -178,7 +178,26 @@ Dua konsekuensi:
    Attestcoin tidak menunggu finality. Ini perlu diputuskan sebelum masuk pitch,
    karena menyangkut klaim keamanan, bukan sekadar angka.
 
-Ini satu sampel. Perlu diukur ulang beberapa kali sebelum dipakai di README.
+### Pengukuran kedua, 4 September
+
+Diambil lewat `npm run worker -- status`, jadi kali ini alat ukurnya adalah kode
+yang benar-benar dipakai worker, bukan perintah manual:
+
+| | Blok |
+|---|---|
+| Sepolia head | 11630928 |
+| Sepolia `finalized` | 11630865 |
+| Ter-attest di Creditcoin (chainKey 1) | **11630890** |
+
+Lag 38 blok di belakang head (~8 menit), dan **25 blok di depan `finalized`**.
+Delapan hari berselang, angkanya praktis identik dengan 27 Agustus: 40 vs 38 blok
+di belakang head, 30 vs 25 blok di depan finalized.
+
+Dua sampel, dua alat ukur berbeda, kesimpulan sama. Cukup untuk masuk README:
+
+1. **~8 menit**, bukan 13–15 menit.
+2. **Attestcoin tidak menunggu finality Ethereum.** Ini bukan detail angka,
+   ini soal klaim keamanan — lihat bagian 8.
 
 ---
 
@@ -268,9 +287,35 @@ Bukan disalin dari dokumentasi. `PoolAddressesProvider.getPool()` dipanggil lang
 
 ---
 
-## 8. Yang masih terbuka
+## 8. Framing latency: apa yang sebenarnya boleh diklaim
 
-- [ ] Wallet + faucet Creditcoin Testnet. Butuh tangan manusia.
+Aturan 5 di `CLAUDE.md` menyuruh memakai kalimat
+*"verified within one Creditcoin block of Ethereum finality"*. Dua pengukuran di
+bagian 4 menunjukkan kalimat itu **tidak akurat**, dan arah ketidakakuratannya
+adalah arah yang berbahaya: ia terdengar seperti janji keamanan yang tidak kami tepati.
+
+Attestation berjalan **mendahului** finality Ethereum sekitar 25–30 blok. Jadi
+proof bisa lolos untuk blok yang secara teknis masih bisa ter-reorg. Peluangnya
+kecil — 25 blok jauh di luar kedalaman reorg yang wajar di Ethereum — tapi
+"kecil" bukan "nol", dan mengklaim finality-gated ketika bukan itu yang terjadi
+adalah klaim yang salah, bukan sekadar konservatif.
+
+Yang akurat, dan tetap kuat:
+
+> **Verified one Creditcoin block after the source block is attested — about
+> 8 minutes after it lands on Ethereum.**
+
+Larangan menulis "real-time" tetap berlaku dan tidak berubah.
+
+Yang berubah dari asumsi awal: reorg Ethereum adalah risiko sisa yang nyata,
+sekecil apa pun, dan tempatnya di bagian keterbatasan README — bukan
+disembunyikan di balik kata "finality".
+
+---
+
+## 9. Yang masih terbuka
+
+- [ ] Wallet + faucet Creditcoin Testnet. Butuh tangan manusia. **Ini satu-satunya blocker yang tersisa untuk semua deployment.**
 - [ ] Signature event `TransactionVerified` yang di-emit `verifyAndEmit`. Diperlukan Hari 8 untuk Proof Explorer.
 - [ ] Apakah likuidasi bisa dipicu di Aave V3 Sepolia. Risiko Hari 6.
-- [ ] Ukur ulang lag attestation beberapa kali sebelum menaruh angka di README.
+- [x] ~~Ukur ulang lag attestation beberapa kali sebelum menaruh angka di README.~~ Selesai 4 Sep, dua sampel, lihat bagian 4.

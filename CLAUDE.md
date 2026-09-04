@@ -32,7 +32,9 @@ Kalau ada ide yang mengandaikan pembacaan state source chain secara langsung, id
 2. **Jangan hitung ulang health factor** dengan sumber harga selain Aave. Pakai angka `getUserAccountData` apa adanya.
 3. **`_findLog` harus mencocokkan emitter DAN topic0.** Tanpa cek emitter, siapa pun bisa deploy kontrak palsu di Sepolia dan menguras vault. Dijaga oleh `test_RejectsLiquidationFromWrongEmitter` — kalau test itu gagal, berhenti dan perbaiki.
 4. **Ketidakpastian Attestcoin diisolasi di `src/interfaces/IAttestcoinProver.sol`.** Kalau perlu menambal di `AniWereASC` agar cocok dengan precompile, artinya adapter yang salah, bukan ASC.
-5. **Jangan tulis "real-time"** di kode, komentar, UI, atau dokumen. Latency sebenarnya ~13–15 menit, didominasi Ethereum finality. Framing yang benar: *verified within one Creditcoin block of Ethereum finality*.
+5. **Jangan tulis "real-time"** di kode, komentar, UI, atau dokumen. Latency sebenarnya **~8 menit**, didominasi lag attestation. Framing yang benar: *verified one Creditcoin block after the source block is attested — about 8 minutes after it lands on Ethereum*.
+
+   Jangan pakai kalimat lama *"within one Creditcoin block of Ethereum finality"*. Dua pengukuran (27 Agt, 4 Sep) menunjukkan attestation berjalan 25–30 blok **di depan** `finalized`, jadi kalimat itu menjanjikan jaminan finality yang tidak kita punya. Reorg Ethereum adalah risiko sisa yang nyata dan tempatnya di bagian keterbatasan, bukan disembunyikan. Lihat `docs/ATTESTCOIN.md` bagian 8.
 6. **Solvency guard tidak boleh dilepas.** Total cover aktif tidak boleh melebihi modal bebas di vault.
 
 ## Status

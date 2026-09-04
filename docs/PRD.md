@@ -233,16 +233,33 @@ Next.js + wagmi + viem. Dua chain config (Sepolia + Creditcoin Testnet). Tiga ha
 
 ## 7. Ekspektasi Latency (jangan overclaim)
 
+> **Direvisi 4 September.** Angka di bawah dulunya ~13–15 menit, hasil menebak dari
+> finality Ethereum. Dua pengukuran live (27 Agt dan 4 Sep, lihat `docs/ATTESTCOIN.md`
+> bagian 4) menunjukkan yang sebenarnya terjadi berbeda, dan bedanya bukan cuma soal angka.
+
 Hindari kata "real-time" di semua materi. Angka yang benar:
 
-| Tahap | Perkiraan |
+| Tahap | Terukur |
 |---|---|
-| Ethereum finality | ~13 menit |
-| Attestation block di Creditcoin | setelah finality |
+| Blok sumber masuk Sepolia | 0 |
+| Ter-attest di Creditcoin | ~38–40 blok kemudian, **~8 menit** |
 | Verifikasi proof + eksekusi | satu block Creditcoin (~15 detik) |
-| **Total** | **~13–15 menit** |
+| **Total** | **~8 menit** |
 
-Framing yang jujur dan tetap kuat: *"Verified within one Creditcoin block of Ethereum finality."* Untuk produk asuransi, latency 15 menit sama sekali bukan masalah. Untuk dashboard yang mengklaim real-time, itu masalah.
+Framing yang jujur dan tetap kuat:
+
+> *"Verified one Creditcoin block after the source block is attested — about 8 minutes
+> after it lands on Ethereum."*
+
+**Jangan pakai kalimat lama** *"within one Creditcoin block of Ethereum finality"*.
+Attestation terukur berjalan **25–30 blok di depan** `finalized`, jadi kalimat itu
+menjanjikan jaminan finality yang protokolnya memang tidak berikan. Konsekuensinya
+nyata dan harus ditulis di bagian keterbatasan: proof bisa lolos untuk blok yang
+secara teori masih bisa ter-reorg. Kedalaman 25 blok jauh di luar reorg yang wajar
+di Ethereum, tapi "jauh di luar" bukan "mustahil".
+
+Untuk produk asuransi, latency 8 menit sama sekali bukan masalah. Yang jadi masalah
+adalah mengklaim jaminan yang tidak dimiliki.
 
 **Batasan protokol lain:** batch query maksimal 10 per continuity proof. Relevan kalau mengejar fitur multi-position.
 

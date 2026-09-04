@@ -3,6 +3,7 @@ import { IBM_Plex_Mono, Poppins } from "next/font/google";
 import "./globals.css";
 import { Nav } from "./_components/Nav";
 import { WALLET } from "@/lib/data";
+import { isDeployed, networkStatus } from "@/lib/chain";
 
 /** Geometric sans, mengikuti referensi. Dipakai untuk judul maupun teks. */
 const poppins = Poppins({
@@ -24,7 +25,12 @@ export const metadata: Metadata = {
     "Parametric liquidation cover for Aave V3 positions, settled on Creditcoin against cryptographic proof from Ethereum.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  // Dibaca langsung dari Sepolia dan Proof Builder di setiap request.
+  // Dua pill di header dulunya bertuliskan "synced" tanpa dasar apa pun;
+  // sekarang keduanya menunjukkan angka yang bisa dicek orang lain.
+  const net = await networkStatus();
+
   return (
     <html
       lang="en"
@@ -50,17 +56,23 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               </div>
 
               <Pill>
-                <Dot className="bg-safe" />
-                Sepolia · synced
+                <Dot className={net.sepoliaHead ? "bg-safe" : "bg-ink-3"} />
+                {net.sepoliaHead
+                  ? `Sepolia · ${net.sepoliaHead.toLocaleString("en-US")}`
+                  : "Sepolia · unreachable"}
               </Pill>
               <Pill>
-                <Dot className="bg-accent" />
-                Creditcoin CC3
+                <Dot className={net.creditcoinHead ? "bg-accent" : "bg-ink-3"} />
+                {net.creditcoinHead
+                  ? `Creditcoin CC3 · ${net.creditcoinHead.toLocaleString("en-US")}`
+                  : "Creditcoin CC3 · unreachable"}
               </Pill>
               <Pill mono>{WALLET}</Pill>
             </header>
 
             <Nav />
+
+            {!isDeployed && <SampleDataNotice />}
 
             <main>{children}</main>
           </div>
@@ -85,6 +97,26 @@ function Pill({
     >
       {children}
     </span>
+  );
+}
+
+/**
+ * Selama kontrak belum di-deploy, angka posisi dan polis di bawah adalah data
+ * contoh. Ini dikatakan di muka, bukan di footer.
+ *
+ * Yang TIDAK termasuk data contoh: dua pill blok di header dan panel
+ * attestation di Proof Explorer. Keduanya dibaca dari jaringan asli.
+ */
+function SampleDataNotice() {
+  return (
+    <p className="mb-5 flex flex-wrap items-center gap-x-2 gap-y-1 rounded-2xl border border-line-strong bg-surface-2 px-4 py-3 text-[12.5px] text-ink-2">
+      <b className="font-semibold">Sample data.</b>
+      <span className="text-ink-3">
+        Contracts are not deployed to testnet yet, so position and policy figures below
+        are illustrative. Block heights and attestation status are read live from Sepolia
+        and Creditcoin.
+      </span>
+    </p>
   );
 }
 
