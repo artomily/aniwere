@@ -237,6 +237,30 @@ Ukuran calldata untuk satu proof: **~6 KB**. Perlu diingat saat estimasi gas Har
 Contoh resmi memakai buffer gas 35% dan fallback `21000 + 5000*jumlahRoot + 20000`
 karena estimasi gas ke precompile sering gagal walaupun call-nya sendiri berhasil.
 
+### Bentuk respons diverifikasi ulang, 4 September
+
+Diambil transaksi Sepolia sungguhan di blok 11627824 lewat route
+`/api/attestcoin/proof` milik frontend, jadi jalur browser → Proof Builder juga
+ikut terbukti hidup:
+
+| Field | Nilai |
+|---|---|
+| `chainKey` | 1 |
+| `headerNumber` | 11627824 |
+| `txIndex` | 0 |
+| `txBytes` | 1601 byte |
+| `merkleProof.siblings` | 7 entri, tiap entri `{hash, isLeft}` |
+| `continuityProof.roots` | **77** |
+
+Respons juga membawa `txHash`, `cached`, dan `generatedAt` yang tidak dipakai
+kontrak. Selebihnya cocok persis dengan struct `INativeQueryVerifier`, jadi ABI
+di frontend maupun worker bisa memakainya tanpa penerjemahan.
+
+**77 root, bukan 1.** Contoh di bagian ini sebelumnya menampilkan satu root, dan
+angka itu menyesatkan untuk estimasi gas: fallback resmi
+`21000 + 5000×77 + 20000` = 426k, dan itu belum menghitung decoding receipt di
+adapter. Worker karena itu menjepit fallback-nya ke batas bawah 2.000.000.
+
 ---
 
 ## 6. Dependensi

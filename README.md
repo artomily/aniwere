@@ -26,12 +26,17 @@ Ditulis di sini, di atas, supaya tidak ada yang perlu menebak.
 | Kontrak Creditcoin (`AniWereASC`, `CoverVault`, `AttestcoinAdapter`) | Selesai, 12/12 test hijau |
 | Jalur verifikasi Attestcoin | **Terbukti hidup.** Proof dari transaksi Sepolia sungguhan diterima precompile; empat variasi proof rusak semuanya revert |
 | Worker proof off-chain | Selesai, dan `status` sudah dijalankan terhadap endpoint asli |
-| Frontend | Tiga halaman jalan, **masih memakai data contoh** — lihat catatan di bawah |
+| Frontend | Tiga halaman, tersambung ke chain lewat wagmi. Tanpa deployment ia berjalan dalam **mode contoh** yang diberi label — lihat catatan di bawah |
 | Deployment ke testnet | **Belum.** Terhalang wallet + faucet Creditcoin |
 
 Yang menghalangi bukan kode. `AniWereProbe`, `AniWereASC`, dan worker semuanya siap dijalankan; yang belum ada adalah wallet yang terdanai untuk membayar gas di kedua chain. Begitu wallet itu ada, urutan perintahnya sudah tertulis di [Deploy](#deploy) dan tidak ada satu pun yang perlu ditulis ulang.
 
-Angka di frontend adalah data contoh dan diberi label seperti itu di UI. Kami memilih menandainya daripada menampilkan dashboard kosong, tapi tidak menampilkannya seolah-olah hasil pembacaan on-chain.
+Frontend punya dua mode, dan yang menentukan hanya satu env var:
+
+- **Mode contoh** (`NEXT_PUBLIC_ASC_ADDRESS` kosong) — angka posisi dan polis adalah data contoh, dan setiap halaman memakai banner yang mengatakan itu. Tombol on-chain mati.
+- **Mode live** (env terisi) — seluruh angka dibaca dari kontrak lewat wallet yang tersambung. Banner hilang. Probe, buy cover, dan submit claim semuanya berjalan dari browser.
+
+Yang **selalu** nyata di kedua mode: tinggi blok di header dan panel attestation di Proof Explorer. Keduanya dibaca dari Sepolia dan Proof Builder di tiap request, tanpa wallet dan tanpa deployment.
 
 ---
 
@@ -104,6 +109,12 @@ Total cover aktif tidak boleh melebihi modal bebas di vault. Vault secara matema
 ### Tidak pernah menghitung ulang health factor
 
 Kami memakai angka dari `getUserAccountData` apa adanya, sehingga HF yang dibuktikan identik dengan yang dipakai Aave untuk memutuskan likuidasi. Menghitung ulang dengan sumber harga lain akan langsung mengembalikan trust assumption yang mau dihilangkan.
+
+### Frontend tidak pernah jadi jalur wajib
+
+Tiga aksi on-chain di UI — probe, submit position proof, submit liquidation claim — semuanya punya padanan satu baris di worker, dan halaman yang bersangkutan menampilkan perintahnya. Ini bukan duplikasi yang kelewat: `submitPositionProof` dan `submitLiquidationClaim` memang permissionless, jadi pemegang polis tidak pernah bergantung pada frontend maupun worker kami untuk dibayar.
+
+Proof diambil lewat route server sendiri (`/api/attestcoin/*`) karena Proof Builder tidak mengirim header CORS. Route itu tidak menambah wewenang apa pun — proof yang lewat sana tetap harus lolos precompile di kontrak.
 
 ### Pengecekan emitter
 

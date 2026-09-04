@@ -1,6 +1,7 @@
 import { AAVE_POOL_SEPOLIA, WALLET } from "@/lib/data";
 import { networkStatus, type NetworkStatus } from "@/lib/chain";
 import { Card, CardHead, Check, ClockIcon, Eyebrow } from "../_components/ui";
+import { ManualClaim } from "../_components/Actions";
 
 type Row = { k: string; v: string };
 
@@ -180,6 +181,30 @@ export default async function ProofPage() {
           money moves together, or neither happens.
         </span>
       </p>
+      </Card>
+
+      <Card className="px-[22px] py-5">
+        <CardHead
+          title="Submit a claim yourself"
+          sub="no worker required"
+          right={
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-surface-2 px-2.5 py-1 font-mono text-[11px] text-ink-2">
+              permissionless
+            </span>
+          }
+        />
+        <p className="mt-1 max-w-[70ch] text-[12.5px] text-ink-3">
+          <code className="font-mono text-[11.5px]">submitLiquidationClaim</code> accepts a
+          proof from any sender, and the payout always goes to the policy holder — never to
+          whoever sent it. That is not a convenience feature: it means a policy holder is
+          never waiting on our infrastructure to be paid. Paste the Sepolia transaction
+          that contains the liquidation and this page will wait for attestation, fetch the
+          proof, and submit it.
+        </p>
+
+        <div className="mt-4 max-w-[620px]">
+          <ManualClaim />
+        </div>
       </Card>
     </div>
   );

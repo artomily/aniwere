@@ -1,4 +1,11 @@
-import { history } from "@/lib/data";
+import { history as sampleHistory } from "@/lib/data";
+
+export type ChartPoint = {
+  date: string;
+  hf: number;
+  debtUsd: number;
+  block: number;
+};
 
 const W = 760;
 const H = 260;
@@ -9,11 +16,14 @@ const x = (i: number, n: number) =>
 
 /** Setiap seri diskalakan ke rentangnya sendiri, seperti grafik dua garis di referensi. */
 function scaler(values: number[]) {
-  const min = Math.min(...values);
-  const max = Math.max(...values);
+  // Posisi tanpa hutang punya HF tak hingga. Dijepit supaya satu titik
+  // seperti itu tidak meratakan seluruh sisa grafik.
+  const finite = values.map((v) => (Number.isFinite(v) ? v : 10));
+  const min = Math.min(...finite);
+  const max = Math.max(...finite);
   const span = max - min || 1;
   return (v: number) => {
-    const t = (v - min) / span;
+    const t = ((Number.isFinite(v) ? v : 10) - min) / span;
     // Disisakan 12% di atas dan bawah supaya puncaknya tidak menempel tepi.
     return H - PAD.bottom - (0.12 + t * 0.76) * (H - PAD.top - PAD.bottom);
   };
@@ -42,8 +52,23 @@ function smoothPath(pts: { x: number; y: number }[]) {
   return d;
 }
 
-export function HealthChart() {
+export function HealthChart({ points = sampleHistory }: { points?: ChartPoint[] }) {
+  const history = points;
   const n = history.length;
+
+  // Dua titik adalah minimum untuk sebuah garis. Di bawah itu jangan
+  // menggambar apa pun: satu proof yang dirender sebagai grafik datar
+  // terlihat seperti riwayat, padahal ia satu titik.
+  if (n < 2) {
+    return (
+      <div className="grid h-[200px] place-items-center rounded-2xl border border-dashed border-line-strong text-[12.5px] text-ink-3">
+        {n === 0
+          ? "No verified snapshots yet — run a probe to create the first one."
+          : "One verified snapshot so far. The chart appears from the second proof onward."}
+      </div>
+    );
+  }
+
   const yHf = scaler(history.map((h) => h.hf));
   const yDebt = scaler(history.map((h) => h.debtUsd));
 
@@ -51,8 +76,12 @@ export function HealthChart() {
   const debtPts = history.map((h, i) => ({ x: x(i, n), y: yDebt(h.debtUsd) }));
 
   const last = history[n - 1];
-  const lastPt = hfPts[n - 1];
-  const ticks = [0, 2, 4, 6, 8];
+  const lastPt = hfPts[n - 1]!;
+  // Maksimal lima label supaya tidak bertumpuk di rentang yang pendek.
+  const tickCount = Math.min(5, n);
+  const ticks = Array.from({ length: tickCount }, (_, i) =>
+    Math.round((i * (n - 1)) / Math.max(1, tickCount - 1)),
+  );
 
   /* Pil dijaga tetap di dalam viewBox. Titik terakhir ada di tepi kanan,
      jadi tanpa clamp separuh pilnya terpotong. */
@@ -68,9 +97,9 @@ export function HealthChart() {
       width="100%"
       height={H}
       role="img"
-      aria-label={`Health factor across ${n} verified snapshots, from ${history[0].hf.toFixed(
-        2
-      )} to ${last.hf.toFixed(2)}, shown against the debt trend over the same snapshots.`}
+      aria-label={`Health factor across ${n} verified snapshots, from ${history[0]!.hf.toFixed(
+        2,
+      )} to ${last!.hf.toFixed(2)}, shown against the debt trend over the same snapshots.`}
     >
       <defs>
         {/* Pil melayang di atas kartu berwarna sama, jadi butuh bayangan
@@ -150,7 +179,7 @@ export function HealthChart() {
           fontFamily="var(--font-mono)"
           fill="var(--ink-3)"
         >
-          HF {last.hf.toFixed(2)} · block {last.block.toLocaleString("en-US")}
+          HF {last!.hf.toFixed(2)} · block {last!.block.toLocaleString("en-US")}
         </text>
       </g>
 
@@ -164,7 +193,7 @@ export function HealthChart() {
           fill="var(--ink-3)"
           textAnchor="middle"
         >
-          {history[i].date}
+          {history[i]!.date}
         </text>
       ))}
     </svg>

@@ -69,8 +69,17 @@ pastikan alamatnya ikut dicatat untuk demo.
 `EvmV1Decoder` adalah library dengan fungsi public, jadi forge men-deploy dan
 me-link otomatis. Kalau estimasi gas gagal, tambahkan `--gas-estimate-multiplier 135`.
 
-Isi `worker/.env` → `ASC_ADDRESS`, dan `.env.local` di root → `NEXT_PUBLIC_ASC_ADDRESS`
-(yang terakhir mematikan banner "sample data" di frontend).
+Isi `worker/.env` → `ASC_ADDRESS`, dan `.env.local` di root:
+
+```bash
+NEXT_PUBLIC_ASC_ADDRESS=<ASC>
+NEXT_PUBLIC_PROBE_ADDRESS=<PROBE>
+```
+
+Dua baris itu yang mengubah frontend dari mode contoh jadi mode live: banner
+"sample data" hilang, header berganti jadi tombol connect, dan tombol probe /
+buy cover / submit claim jadi hidup. Restart `npm run dev` setelah mengubahnya —
+Next hanya membaca `.env.local` saat proses mulai.
 
 **Kalau deploy gagal karena precompile:** ini skenario yang paling mungkin
 merusak hari. Jalur decoding receipt belum pernah diuji di jaringan asli —
@@ -131,7 +140,7 @@ Simpan tx hash Creditcoin-nya. Ini bahan rekaman.
 
 ## 6. Beli cover (5 menit)
 
-Lewat frontend, atau langsung:
+Lewat frontend (`/cover` — connect, isi jumlah, Pay premium), atau langsung:
 
 ```bash
 # premi = 2% dari cover
@@ -167,6 +176,11 @@ Lalu turunkan HF ke bawah 1. Dua jalan:
 
 **B. Panggil `liquidationCall` sendiri.** Jangan berharap ada bot yang lewat di
 testnet. Butuh sedikit debt asset untuk membayar bagian yang dilikuidasi.
+
+Kalau worker mati saat demo, `/proof` punya cadangannya: tempel tx hash likuidasi
+di kartu "Submit a claim yourself". Halaman itu menunggu attestation, mengambil
+proof, dan mengirimkannya dari wallet penonton sekalipun — `submitLiquidationClaim`
+memang permissionless dan payout selalu ke pemegang polis.
 
 Yang harus terlihat:
 

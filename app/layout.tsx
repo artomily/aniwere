@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import { IBM_Plex_Mono, Poppins } from "next/font/google";
 import "./globals.css";
 import { Nav } from "./_components/Nav";
-import { WALLET } from "@/lib/data";
-import { isDeployed, networkStatus } from "@/lib/chain";
+import { networkStatus } from "@/lib/chain";
+import { isDeployed } from "@/lib/contracts";
+import { Providers } from "./_components/Providers";
+import { ConnectButton } from "./_components/ConnectButton";
 
 /** Geometric sans, mengikuti referensi. Dipakai untuk judul maupun teks. */
 const poppins = Poppins({
@@ -37,6 +39,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       className={`${poppins.variable} ${plexMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col bg-ground font-sans text-[14px] leading-normal">
+        <Providers>
         <div className="mx-auto w-full max-w-[1400px] p-4 sm:p-6">
           {/* Satu panel besar membulat, seperti di referensi. */}
           <div className="rounded-[28px] bg-panel px-5 py-6 shadow-soft sm:px-8 sm:py-7">
@@ -67,7 +70,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
                   ? `Creditcoin CC3 · ${net.creditcoinHead.toLocaleString("en-US")}`
                   : "Creditcoin CC3 · unreachable"}
               </Pill>
-              <Pill mono>{WALLET}</Pill>
+              <ConnectButton />
             </header>
 
             <Nav />
@@ -77,6 +80,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
             <main>{children}</main>
           </div>
         </div>
+        </Providers>
       </body>
     </html>
   );

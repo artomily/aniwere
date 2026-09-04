@@ -10,17 +10,25 @@
  * lapisan pengambil data nanti, bukan komponen.
  */
 
-/** Cermin dari `Snapshot` di AniWereASC. */
+/**
+ * Cermin dari `Snapshot` di AniWereASC.
+ *
+ * Beberapa field `null` ketika datanya dari chain: kontrak menyimpan collateral
+ * dalam base currency Aave, bukan ETH, dan tidak menyimpan liquidation threshold
+ * sama sekali. Dibiarkan `null` daripada diisi angka perkiraan — angka
+ * perkiraan di dashboard risiko tidak bisa dibedakan dari angka terbukti.
+ */
 export type Snapshot = {
-  collateralEth: number;
+  collateralEth: number | null;
   collateralUsd: number;
   debtUsd: number;
+  /** `Infinity` kalau posisi tidak punya hutang. */
   healthFactor: number;
   /** Block Sepolia tempat event probe di-emit. */
   sourceBlock: number;
   /** Kapan snapshot ini diverifikasi di Creditcoin. */
   verifiedAt: Date;
-  liquidationThresholdPct: number;
+  liquidationThresholdPct: number | null;
 };
 
 /** Cermin dari `Policy` di AniWereASC. */
@@ -29,7 +37,8 @@ export type Policy = {
   coverAmount: number;
   premiumPaid: number;
   hfAtPurchase: number;
-  startedAt: Date;
+  /** `null` dari chain — kontrak hanya menyimpan `expiresAt`. */
+  startedAt: Date | null;
   expiresAt: Date;
   active: boolean;
   claimed: boolean;

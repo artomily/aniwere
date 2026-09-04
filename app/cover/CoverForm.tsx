@@ -1,15 +1,24 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import { PARAMS, formatCtc, premiumFor } from "@/lib/data";
+import { parseEther } from "viem";
+import { useAccount, useChainId, usePublicClient, useSwitchChain, useWriteContract } from "wagmi";
+import { PARAMS, formatCtc, formatDate, premiumFor } from "@/lib/data";
+import { creditcoinTestnet } from "@/lib/chains";
+import { ASC_ADDRESS, BPS, PREMIUM_BPS, ascAbi } from "@/lib/contracts";
 import { Card, CardHead, Check, Note } from "../_components/ui";
+import { Box, TxStatus, type TxPhase } from "../_components/tx";
 
 const DURATIONS = [7, 30, 90] as const;
 
 type Props = {
+  live: boolean;
   freeCapital: number;
   snapshotAgeMinutes: number;
   healthFactor: number;
+  hasActivePolicy: boolean;
+  policyExpiresAt: Date | null;
+  onBought?: () => void;
 };
 
 /**
@@ -20,8 +29,16 @@ type Props = {
  * Di produk risiko, panel yang menyatakan kondisi terpenuhi padahal tidak
  * lebih berbahaya daripada tidak ada panel sama sekali.
  */
-export function BuyCover({ freeCapital, snapshotAgeMinutes, healthFactor }: Props) {
-  const [amount, setAmount] = useState(2500);
+export function BuyCover({
+  live,
+  freeCapital,
+  snapshotAgeMinutes,
+  healthFactor,
+  hasActivePolicy,
+  policyExpiresAt,
+  onBought,
+}: Props) {
+  const [amount, setAmount] = useState(live ? 100 : 2500);
   const [days, setDays] = useState<number>(30);
 
   const premium = premiumFor(amount);
@@ -30,7 +47,12 @@ export function BuyCover({ freeCapital, snapshotAgeMinutes, healthFactor }: Prop
   const hfOk = healthFactor >= PARAMS.minHfToBuy;
   const durationOk = days >= PARAMS.minDurationDays && days <= PARAMS.maxDurationDays;
 
-  const canBuy = fitsVault && snapshotFresh && hfOk && durationOk;
+  // Kontrak menolak polis kedua selama yang pertama masih aktif
+  // (`PolicyAlreadyActive`). Dicerminkan di sini supaya tombolnya tidak
+  // mengundang transaksi yang sudah pasti gagal.
+  const canBuy = fitsVault && snapshotFresh && hfOk && durationOk && !hasActivePolicy;
+
+  const buy = useBuyCover(onBought);
 
   const checks: { ok: boolean; text: ReactNode }[] = [
     {
@@ -51,13 +73,13 @@ export function BuyCover({ freeCapital, snapshotAgeMinutes, healthFactor }: Prop
       ok: hfOk,
       text: hfOk ? (
         <>
-          Health factor <b>{healthFactor.toFixed(2)}</b> is above the{" "}
+          Health factor <b>{fmtHf(healthFactor)}</b> is above the{" "}
           <Code>{PARAMS.minHfToBuy.toFixed(2)}</Code> floor. You cannot insure a fire that
           has already started.
         </>
       ) : (
         <>
-          Health factor <b>{healthFactor.toFixed(2)}</b> is below the{" "}
+          Health factor <b>{fmtHf(healthFactor)}</b> is below the{" "}
           <Code>{PARAMS.minHfToBuy.toFixed(2)}</Code> floor. Liquidation is too close for
           cover to be sold.
         </>
@@ -162,13 +184,42 @@ export function BuyCover({ freeCapital, snapshotAgeMinutes, healthFactor }: Prop
           </p>
         )}
 
+        {hasActivePolicy && (
+          <p className="mt-3 rounded-2xl bg-accent-soft px-3.5 py-3 text-[12.5px] text-accent">
+            You already hold an active policy
+            {policyExpiresAt ? ` until ${formatDate(policyExpiresAt, true)}` : ""}. The
+            contract allows one at a time — a second purchase reverts with{" "}
+            <Code>PolicyAlreadyActive</Code>.
+          </p>
+        )}
+
         <button
           type="button"
-          disabled={!canBuy}
+          onClick={() => buy.run(amount, days)}
+          disabled={!canBuy || !live || buy.busy}
           className="mt-4 w-full cursor-pointer rounded-2xl bg-accent px-4 py-3.5 text-[14px] font-semibold text-white shadow-card hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
         >
-          Pay premium on Creditcoin
+          {buy.busy ? "Confirming…" : "Pay premium on Creditcoin"}
         </button>
+
+        {!live && (
+          <Box tone="neutral">
+            Sample mode. The contracts are not deployed yet, so this button has nothing to
+            send a transaction to. Every number and every rule shown here is the real one.
+          </Box>
+        )}
+
+        <TxStatus
+          phase={buy.phase}
+          hash={buy.hash}
+          chain="creditcoin"
+          error={buy.error}
+          labels={{
+            pending: "Premium sent. Waiting for the Creditcoin receipt…",
+            success: "Cover is active.",
+          }}
+        />
+
         <p className="mt-2.5 text-center text-[12.5px] text-ink-3">
           One transaction. The policy is written to your address and cannot be
           transferred.
@@ -200,6 +251,75 @@ export function BuyCover({ freeCapital, snapshotAgeMinutes, healthFactor }: Prop
       </Card>
     </div>
   );
+}
+
+/**
+ * Pembelian cover.
+ *
+ * Premi dihitung dalam bigint dengan rumus yang sama persis seperti di kontrak
+ * — `(coverAmount * PREMIUM_BPS) / BPS`. Menghitungnya dalam `number` lalu
+ * dibulatkan akan meleset beberapa wei, dan `buyCover` menolak `msg.value`
+ * yang tidak sama persis lewat `BadPremium`.
+ */
+function useBuyCover(onBought?: () => void) {
+  const { isConnected } = useAccount();
+  const chainId = useChainId();
+  const { switchChainAsync } = useSwitchChain();
+  const { writeContractAsync } = useWriteContract();
+  const client = usePublicClient({ chainId: creditcoinTestnet.id });
+
+  const [phase, setPhase] = useState<TxPhase>("idle");
+  const [hash, setHash] = useState<`0x${string}` | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  async function run(amountCtc: number, days: number) {
+    if (!ASC_ADDRESS || !client || !isConnected) return;
+    setError(null);
+    setPhase("signing");
+
+    try {
+      if (chainId !== creditcoinTestnet.id) {
+        await switchChainAsync({ chainId: creditcoinTestnet.id });
+      }
+
+      const coverWei = parseEther(String(amountCtc));
+      const premiumWei = (coverWei * PREMIUM_BPS) / BPS;
+
+      const tx = await writeContractAsync({
+        address: ASC_ADDRESS,
+        abi: ascAbi,
+        functionName: "buyCover",
+        args: [coverWei, BigInt(days) * 86_400n],
+        value: premiumWei,
+        chainId: creditcoinTestnet.id,
+      });
+      setHash(tx);
+      setPhase("pending");
+
+      const receipt = await client.waitForTransactionReceipt({ hash: tx });
+      if (receipt.status !== "success") throw new Error("buyCover reverted");
+
+      setPhase("success");
+      onBought?.();
+    } catch (e) {
+      const raw = e instanceof Error ? e.message : String(e);
+      setError(raw.split("\n")[0]!.slice(0, 200));
+      setPhase("error");
+    }
+  }
+
+  return {
+    run,
+    phase,
+    hash,
+    error,
+    busy: phase === "signing" || phase === "pending",
+  };
+}
+
+/** Posisi tanpa hutang punya HF tak hingga; `toFixed` di situ menghasilkan "Infinity". */
+function fmtHf(hf: number) {
+  return Number.isFinite(hf) ? hf.toFixed(2) : "\u221e";
 }
 
 function Cross() {

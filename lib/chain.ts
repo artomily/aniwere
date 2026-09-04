@@ -11,12 +11,10 @@
  * pernah menggantinya diam-diam dengan angka contoh.
  */
 
-const SEPOLIA_RPC = process.env.SEPOLIA_RPC_URL ?? "https://ethereum-sepolia-rpc.publicnode.com";
-const PROOF_BUILDER = (process.env.PROOF_BUILDER_URL ?? "https://prover.cc3-testnet.creditcoin.network").replace(/\/+$/, "");
-const CREDITCOIN_RPC = process.env.CREDITCOIN_RPC_URL ?? "https://rpc.cc3-testnet.creditcoin.network";
+import { attestedHeightOf } from "./proofBuilder";
 
-/** chainKey Sepolia di Creditcoin. BUKAN chain ID 11155111. */
-const CHAIN_KEY = Number(process.env.SOURCE_CHAIN_KEY ?? 1);
+const SEPOLIA_RPC = process.env.SEPOLIA_RPC_URL ?? "https://ethereum-sepolia-rpc.publicnode.com";
+const CREDITCOIN_RPC = process.env.CREDITCOIN_RPC_URL ?? "https://rpc.cc3-testnet.creditcoin.network";
 
 /** Rata-rata block time Sepolia, dipakai mengubah selisih blok jadi menit. */
 const SEPOLIA_BLOCK_SECONDS = 12;
@@ -52,30 +50,6 @@ async function rpc(url: string, method: string, params: unknown[]): Promise<stri
   }
 }
 
-async function attested(): Promise<number | null> {
-  try {
-    const res = await fetch(`${PROOF_BUILDER}/api/v1/attested-height/${CHAIN_KEY}`, {
-      cache: "no-store",
-    });
-    if (!res.ok) return null;
-    const body: unknown = await res.json();
-    // Bentuknya bisa angka telanjang atau objek pembungkus, tergantung versi
-    // prover. Worker menangani keduanya; di sini pun sama.
-    if (typeof body === "number") return body;
-    if (typeof body === "string") return Number(body);
-    if (body && typeof body === "object") {
-      for (const k of ["height", "attestedHeight", "headerNumber", "latestHeight"]) {
-        const v = (body as Record<string, unknown>)[k];
-        if (typeof v === "number") return v;
-        if (typeof v === "string") return Number(v);
-      }
-    }
-    return null;
-  } catch {
-    return null;
-  }
-}
-
 const toNum = (hex: string | null) => (hex ? Number.parseInt(hex, 16) : null);
 
 export async function networkStatus(): Promise<NetworkStatus> {
@@ -83,7 +57,7 @@ export async function networkStatus(): Promise<NetworkStatus> {
     rpc(SEPOLIA_RPC, "eth_getBlockByNumber", ["latest", false]),
     rpc(SEPOLIA_RPC, "eth_getBlockByNumber", ["finalized", false]),
     rpc(CREDITCOIN_RPC, "eth_blockNumber", []),
-    attested(),
+    attestedHeightOf(),
   ]);
 
   const sepoliaHead = toNum(headHex);
@@ -104,13 +78,3 @@ export async function networkStatus(): Promise<NetworkStatus> {
     creditcoinHead,
   };
 }
-
-/**
- * Apakah kontrak sudah di-deploy.
- *
- * Selama `false`, seluruh angka posisi dan polis di UI adalah data contoh dan
- * harus diberi label seperti itu. Tidak ada jalan tengah: dashboard yang
- * menampilkan angka karangan tanpa label adalah dashboard yang berbohong.
- */
-export const ASC_ADDRESS = process.env.NEXT_PUBLIC_ASC_ADDRESS ?? "";
-export const isDeployed = ASC_ADDRESS.length === 42;
