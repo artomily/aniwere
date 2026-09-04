@@ -4,7 +4,7 @@ pragma solidity ^0.8.24;
 import {Test} from "forge-std/Test.sol";
 import {AniWereASC} from "../src/AniWereASC.sol";
 import {CoverVault} from "../src/CoverVault.sol";
-import {VerifiedLog} from "../src/interfaces/IAttestcoinProver.sol";
+import {INativeQueryVerifier, VerifiedLog} from "../src/interfaces/IAttestcoinProver.sol";
 import {MockProver} from "./MockProver.sol";
 
 contract AniWereASCTest is Test {
@@ -62,16 +62,34 @@ contract AniWereASCTest is Test {
         l.data = abi.encode(uint256(1e18), uint256(2e18), address(0x3333), false);
     }
 
-    function _register(bytes memory rawTx, uint256 blockNum, VerifiedLog memory l) internal {
+    function _register(bytes memory rawTx, VerifiedLog memory l) internal {
         VerifiedLog[] memory logs = new VerifiedLog[](1);
         logs[0] = l;
-        prover.registerTransaction(rawTx, blockNum, logs);
+        prover.registerTransaction(rawTx, logs);
+    }
+
+    /// @dev Proof kosong. Isinya tidak pernah dibaca MockProver — yang diuji
+    ///      di file ini adalah logic ASC, bukan verifikasi kriptografisnya.
+    function _merkle() internal pure returns (INativeQueryVerifier.MerkleProof memory m) {
+        m.siblings = new INativeQueryVerifier.MerkleProofEntry[](0);
+    }
+
+    function _continuity() internal pure returns (INativeQueryVerifier.ContinuityProof memory c) {
+        c.roots = new bytes32[](0);
+    }
+
+    function _submitPosition(uint64 height, bytes memory rawTx) internal {
+        asc.submitPositionProof(height, rawTx, _merkle(), _continuity());
+    }
+
+    function _submitClaim(uint64 height, bytes memory rawTx) internal {
+        asc.submitLiquidationClaim(height, rawTx, _merkle(), _continuity());
     }
 
     function _verifyHealthyPosition() internal {
         bytes memory rawTx = hex"aa01";
-        _register(rawTx, 21_000_000, _probeLog(alice, 10_000e8, 4_000e8, 1.8e18));
-        asc.submitPositionProof(hex"", hex"", rawTx);
+        _register(rawTx, _probeLog(alice, 10_000e8, 4_000e8, 1.8e18));
+        _submitPosition(21_000_000, rawTx);
     }
 
     // ── tests ────────────────────────────────────────────────
@@ -87,8 +105,8 @@ contract AniWereASCTest is Test {
         uint256 before = alice.balance;
 
         bytes memory liqTx = hex"bb01";
-        _register(liqTx, 21_000_500, _liquidationLog(alice, AAVE_POOL));
-        asc.submitLiquidationClaim(hex"", hex"", liqTx);
+        _register(liqTx, _liquidationLog(alice, AAVE_POOL));
+        _submitClaim(21_000_500, liqTx);
 
         assertEq(alice.balance, before + COVER);
         assertEq(vault.lockedCapital(), 0);
@@ -107,28 +125,40 @@ contract AniWereASCTest is Test {
         asc.buyCover{value: PREMIUM}(COVER, 30 days);
 
         bytes memory liqTx = hex"bb02";
-        _register(liqTx, 21_000_500, _liquidationLog(alice, EVIL_CONTRACT));
+        _register(liqTx, _liquidationLog(alice, EVIL_CONTRACT));
 
         vm.expectRevert(AniWereASC.NoMatchingLog.selector);
-        asc.submitLiquidationClaim(hex"", hex"", liqTx);
+        _submitClaim(21_000_500, liqTx);
     }
 
     function test_RejectsUnprovenTransaction() public {
         vm.expectRevert(MockProver.ProofRejected.selector);
-        asc.submitPositionProof(hex"", hex"", hex"deadbeef");
+        _submitPosition(21_000_000, hex"deadbeef");
     }
 
     function test_RejectsReplayedProof() public {
         _verifyHealthyPosition();
 
         vm.expectRevert(AniWereASC.ProofAlreadyUsed.selector);
-        asc.submitPositionProof(hex"", hex"", hex"aa01");
+        _submitPosition(21_000_000, hex"aa01");
+    }
+
+    /// @dev proofId mengikat height, bukan cuma isi transaksi. Tanpa itu,
+    ///      snapshot lama bisa dikirim ulang seolah datang dari blok baru.
+    ///      Kebalikannya juga harus benar: transaksi yang sama di height berbeda
+    ///      adalah proof berbeda, dan memang harus lolos.
+    function test_SameTransactionAtDifferentHeightIsSeparateProof() public {
+        _verifyHealthyPosition();
+        _submitPosition(21_000_001, hex"aa01");
+
+        (,,, uint256 sourceBlock,) = asc.latestSnapshot(alice);
+        assertEq(sourceBlock, 21_000_001);
     }
 
     function test_CannotBuyCoverWhenAlreadyUnhealthy() public {
         bytes memory rawTx = hex"aa02";
-        _register(rawTx, 21_000_000, _probeLog(alice, 10_000e8, 9_800e8, 1.01e18));
-        asc.submitPositionProof(hex"", hex"", rawTx);
+        _register(rawTx, _probeLog(alice, 10_000e8, 9_800e8, 1.01e18));
+        _submitPosition(21_000_000, rawTx);
 
         vm.prank(alice);
         vm.expectRevert(AniWereASC.HealthFactorTooLow.selector);
@@ -180,10 +210,10 @@ contract AniWereASCTest is Test {
         skip(31 days);
 
         bytes memory liqTx = hex"bb03";
-        _register(liqTx, 21_000_500, _liquidationLog(alice, AAVE_POOL));
+        _register(liqTx, _liquidationLog(alice, AAVE_POOL));
 
         vm.expectRevert(AniWereASC.PolicyExpiredError.selector);
-        asc.submitLiquidationClaim(hex"", hex"", liqTx);
+        _submitClaim(21_000_500, liqTx);
     }
 
     function test_UnderwriterCannotWithdrawLockedCapital() public {

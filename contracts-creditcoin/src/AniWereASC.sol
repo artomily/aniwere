@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {IAttestcoinProver, VerifiedLog} from "./interfaces/IAttestcoinProver.sol";
+import {IAttestcoinProver, INativeQueryVerifier, VerifiedLog} from "./interfaces/IAttestcoinProver.sol";
 import {CoverVault} from "./CoverVault.sol";
 
 /// @title AniWereASC
@@ -52,7 +52,8 @@ contract AniWereASC {
     // State
     // ─────────────────────────────────────────────────────────────
 
-    /// @notice Block Prover Precompile (lihat IAttestcoinProver soal adapter).
+    /// @notice Adapter Attestcoin. Bukan precompile-nya langsung — lihat
+    ///         AttestcoinAdapter soal kenapa lapisan itu ada.
     IAttestcoinProver public immutable PROVER;
 
     /// @notice AniWereProbe di Sepolia. Log dari emitter lain ditolak.
@@ -125,16 +126,20 @@ contract AniWereASC {
     /// @dev Dipanggil off-chain worker. Worker tidak dipercaya untuk apa pun:
     ///      kalau proof-nya palsu, PROVER revert dan transaksi ini gagal total.
     function submitPositionProof(
-        bytes calldata continuityProof,
-        bytes calldata merkleProof,
-        bytes calldata rawTransaction
+        uint64 height,
+        bytes calldata encodedTransaction,
+        INativeQueryVerifier.MerkleProof calldata merkleProof,
+        INativeQueryVerifier.ContinuityProof calldata continuityProof
     ) external {
-        bytes32 proofId = keccak256(rawTransaction);
+        // Verifikasi dulu, baru catat proofId. proofId lahir dari adapter dan
+        // mengikat height, jadi ia baru punya arti setelah proof terbukti sah.
+        (bytes32 proofId, VerifiedLog[] memory logs) =
+            PROVER.verifyAndExtract(height, encodedTransaction, merkleProof, continuityProof);
+
         if (usedProofs[proofId]) revert ProofAlreadyUsed();
         usedProofs[proofId] = true;
 
-        (uint256 sourceBlock, VerifiedLog[] memory logs) =
-            PROVER.verifyTransaction(continuityProof, merkleProof, rawTransaction);
+        uint256 sourceBlock = height;
 
         VerifiedLog memory log = _findLog(logs, SOURCE_PROBE, TOPIC_POSITION_PROBED);
 
@@ -200,17 +205,19 @@ contract AniWereASC {
     ///      karena payout selalu ke pemegang polis. Ini penting: kalau worker
     ///      kita mati, user atau pihak lain tetap bisa menyelesaikan klaim sendiri.
     function submitLiquidationClaim(
-        bytes calldata continuityProof,
-        bytes calldata merkleProof,
-        bytes calldata rawTransaction
+        uint64 height,
+        bytes calldata encodedTransaction,
+        INativeQueryVerifier.MerkleProof calldata merkleProof,
+        INativeQueryVerifier.ContinuityProof calldata continuityProof
     ) external {
-        bytes32 proofId = keccak256(rawTransaction);
+        // 1. Verifikasi. Revert kalau proof tidak sah.
+        (bytes32 proofId, VerifiedLog[] memory logs) =
+            PROVER.verifyAndExtract(height, encodedTransaction, merkleProof, continuityProof);
+
         if (usedProofs[proofId]) revert ProofAlreadyUsed();
         usedProofs[proofId] = true;
 
-        // 1. Verifikasi. Revert kalau proof tidak sah.
-        (uint256 sourceBlock, VerifiedLog[] memory logs) =
-            PROVER.verifyTransaction(continuityProof, merkleProof, rawTransaction);
+        uint256 sourceBlock = height;
 
         // 2. Cari LiquidationCall yang benar-benar dari Aave Pool.
         VerifiedLog memory log = _findLog(logs, SOURCE_AAVE_POOL, TOPIC_LIQUIDATION_CALL);

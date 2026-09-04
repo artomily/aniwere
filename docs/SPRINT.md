@@ -53,14 +53,26 @@ Jangan tulis kode AniWere hari ini. Serius.
 
 **Goal:** event kita sendiri sudah mengalir di source chain.
 
-- [ ] Ganti `IAttestcoinProver.sol` dengan signature asli hasil Hari 1
-- [ ] Sesuaikan `MockProver.sol` agar mengikuti bentuk baru, pastikan test tetap hijau
+- [x] Ganti `IAttestcoinProver.sol` dengan signature asli hasil Hari 1 — **selesai 1 Sep**
+- [x] Sesuaikan `MockProver.sol` agar mengikuti bentuk baru, pastikan test tetap hijau — 12/12 hijau
 - [ ] Deploy `AniWereProbe` ke Sepolia, verify di Etherscan
 - [ ] Buat posisi Aave sungguhan di Sepolia: supply + borrow, target HF sekitar 1.5
 - [ ] Panggil `probe(user)`, konfirmasi `PositionProbedForCover` muncul di Etherscan
 - [ ] Simpan tx hash-nya, ini bahan baku Hari 3
 
 **DoD:** ada event probe di Etherscan Sepolia berisi angka posisi Aave yang nyata.
+
+**Status 1 Sep:** adapter selesai. `AttestcoinAdapter.sol` memanggil `verifyAndEmit` di
+`0x…0FD2` lalu men-decode receipt sendiri lewat `EvmV1Decoder` — precompile hanya
+mengembalikan `bool`, log tidak ikut. `AniWereASC` tidak tahu-menahu soal precompile;
+yang berubah di sana hanya signature dua fungsi submit dan `proofId`, yang sekarang
+mengikat chainKey + height + merkle root + isi transaksi (dulu cuma hash transaksi,
+sehingga transaksi yang sama masih bisa dikirim ulang lewat blok berbeda).
+`test_RejectsLiquidationFromWrongEmitter` tetap hijau.
+
+Yang belum bisa dites lokal: decoding receipt di adapter. Precompile pallet-evm tidak
+punya bytecode, jadi fork test tidak bisa menyentuhnya. Jalur itu baru terbukti Hari 4
+di Creditcoin Testnet. Sisa blocker Hari 2 semuanya butuh wallet dan deployment.
 
 **Stop signal:** Aave V3 Sepolia ternyata tidak bisa dipakai. → Deploy fork Aave sendiri dengan mock oracle. Ini juga menyelesaikan masalah Hari 6 sekaligus, jadi bukan kerugian murni.
 

@@ -1,0 +1,8 @@
+{
+  "name": "aniwere-contracts-creditcoin",
+  "private": true,
+  "description": "Dependensi Solidity untuk sisi Creditcoin. Terpisah dari package.json root supaya frontend tidak ikut menarik kontrak.",
+  "dependencies": {
+    "@gluwa/usc-contracts": "0.1.2"
+  }
+}
