@@ -1,4 +1,7 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
+import { cookieToInitialState } from "wagmi";
+import { wagmiConfig } from "@/lib/wagmi";
 import { IBM_Plex_Mono, Poppins } from "next/font/google";
 import "./globals.css";
 import { Nav } from "./_components/Nav";
@@ -31,7 +34,8 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   // Dibaca langsung dari Sepolia dan Proof Builder di setiap request.
   // Dua pill di header dulunya bertuliskan "synced" tanpa dasar apa pun;
   // sekarang keduanya menunjukkan angka yang bisa dicek orang lain.
-  const net = await networkStatus();
+  const [net, cookie] = await Promise.all([networkStatus(), headers().then((h) => h.get("cookie"))]);
+  const initialState = cookieToInitialState(wagmiConfig, cookie);
 
   return (
     <html
@@ -39,7 +43,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       className={`${poppins.variable} ${plexMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col bg-ground font-sans text-[14px] leading-normal">
-        <Providers>
+        <Providers initialState={initialState}>
         <div className="mx-auto w-full max-w-[1400px] p-4 sm:p-6">
           {/* Satu panel besar membulat, seperti di referensi. */}
           <div className="rounded-[28px] bg-panel px-5 py-6 shadow-soft sm:px-8 sm:py-7">

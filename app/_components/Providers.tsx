@@ -2,7 +2,7 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState, type ReactNode } from "react";
-import { WagmiProvider } from "wagmi";
+import { WagmiProvider, type State } from "wagmi";
 import { wagmiConfig } from "@/lib/wagmi";
 
 /**
@@ -12,7 +12,20 @@ import { wagmiConfig } from "@/lib/wagmi";
  * bisa terbawa ke user lain. Untuk aplikasi yang menampilkan posisi utang orang,
  * itu bukan bug yang boleh ditunda.
  */
-export function Providers({ children }: { children: ReactNode }) {
+export function Providers({
+  children,
+  initialState,
+}: {
+  children: ReactNode;
+  /**
+   * State wallet yang dibaca dari cookie di server.
+   *
+   * Tanpa ini, tiap navigasi merender "Connect wallet" lebih dulu lalu berganti
+   * begitu wagmi membaca storage di client. Kedipan itu tidak berbahaya, tapi
+   * saat demo terlihat seperti wallet-nya putus.
+   */
+  initialState?: State;
+}) {
   const [queryClient] = useState(
     () =>
       new QueryClient({
@@ -27,7 +40,7 @@ export function Providers({ children }: { children: ReactNode }) {
   );
 
   return (
-    <WagmiProvider config={wagmiConfig}>
+    <WagmiProvider config={wagmiConfig} initialState={initialState}>
       <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
     </WagmiProvider>
   );
