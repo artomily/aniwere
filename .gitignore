@@ -1,9 +1,9 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
-/node_modules
-# Worker punya package.json sendiri, jadi /node_modules yang berakar di root
-# tidak menjangkaunya.
+# Tanpa garis miring di depan, supaya berlaku di kedalaman berapa pun.
+# Sub-project punya package.json sendiri, dan `/node_modules` yang berakar
+# di root tidak pernah menjangkaunya.
 node_modules/
 /.pnp
 .pnp.*
@@ -45,7 +45,3 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-
-# worker
-worker/.watch-state.json
-worker/proof-*.json

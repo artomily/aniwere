@@ -1,0 +1,13 @@
+node_modules/
+
+# Jangan pernah commit .env yang sudah terisi — di dalamnya ada PRIVATE_KEY.
+.env
+
+# Cursor blok terakhir yang sudah dikerjakan `watch`. Ini kenyamanan lokal,
+# bukan state yang harus dibagi: anti-replay yang sebenarnya ada di
+# `usedProofs` on-chain.
+.watch-state.json
+
+# Hasil `npm run worker -- prove`. Bisa dibangun ulang kapan saja dari tx hash,
+# dan ukurannya ~6 KB per file.
+proof-*.json
