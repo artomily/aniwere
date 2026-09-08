@@ -14,7 +14,7 @@ sequenceDiagram
     AV->>AV: emit LiquidationCall
     Note right of AV: Event ASLI Aave.<br/>Bukan kita yang bikin.
 
-    Note over AV,W: Tunggu Ethereum finality (~13 menit)
+    Note over AV,W: Tunggu block sumber ter-attest (~8 menit).<br/>BUKAN menunggu finality Ethereum — attestation berjalan di depannya.
 
     W->>W: Deteksi LiquidationCall
     W->>W: Tunggu attestation di Creditcoin

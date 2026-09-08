@@ -15,7 +15,7 @@ sequenceDiagram
     AV-->>PR: collateral, debt, healthFactor
     PR->>PR: emit PositionProbedForCover
 
-    Note over PR,W: Tunggu Ethereum finality (~13 menit)
+    Note over PR,W: Tunggu block sumber ter-attest (~8 menit).<br/>BUKAN menunggu finality Ethereum — attestation berjalan di depannya.
 
     W->>W: Deteksi event via eth_getLogs
     W->>W: Polling sampai block ter-attest di Creditcoin
