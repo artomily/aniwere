@@ -1,0 +1,23 @@
+{
+  "name": "aniwere-video",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "voice": "node scripts/build-voice.mjs",
+    "studio": "remotion studio",
+    "render": "remotion render AniWere out/aniwere-demo.mp4 --concurrency=4",
+    "build": "npm run voice && npm run render"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.409",
+    "@remotion/google-fonts": "^4.0.409",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "remotion": "^4.0.409"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.0",
+    "typescript": "^5.9.0"
+  }
+}

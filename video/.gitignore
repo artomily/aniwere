@@ -1,0 +1,7 @@
+node_modules/
+out/
+
+# Voice-over dan narration.json di-generate ulang oleh `npm run voice`.
+# Tidak ikut di-commit supaya audio biner tidak menggemukkan repo.
+public/audio/
+src/narration.json
