@@ -8,6 +8,7 @@ import {
   history as sampleHistory,
   minutesAgo,
   riskOf,
+  SAMPLE_EPOCH,
   snapshotProof,
   type Policy,
   type Snapshot,
@@ -25,8 +26,11 @@ import { ConnectButton } from "./_components/ConnectButton";
  *
  * Render pertama di server dan di client harus identik, jadi `useNow` memakai
  * nilai ini lebih dulu lalu menggantinya dengan waktu asli setelah mount.
+ *
+ * Datang dari `lib/data` supaya jam dan datanya tidak bisa lagi bergeser
+ * sendiri-sendiri — dulu konstanta ini ditulis ulang di dua halaman.
  */
-const SAMPLE_NOW = new Date("2026-08-27T09:14:00Z");
+const SAMPLE_NOW = SAMPLE_EPOCH;
 
 export default function DashboardPage() {
   const { source, deployed, connected, loading, snapshot, policy, vault, refetch } =

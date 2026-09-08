@@ -1,6 +1,6 @@
 "use client";
 
-import { freeCapital, minutesAgo } from "@/lib/data";
+import { freeCapital, minutesAgo, SAMPLE_EPOCH } from "@/lib/data";
 import { useAniWere, useNow } from "@/lib/useAniWere";
 import { BuyCover } from "./CoverForm";
 import { Card } from "../_components/ui";
@@ -8,7 +8,7 @@ import { ConnectButton } from "../_components/ConnectButton";
 import { ProbeButton } from "../_components/Actions";
 
 /** Waktu acuan untuk data contoh; diganti waktu asli setelah mount. */
-const SAMPLE_NOW = new Date("2026-08-27T09:14:00Z");
+const SAMPLE_NOW = SAMPLE_EPOCH;
 
 export default function CoverPage() {
   const { source, deployed, connected, snapshot, policy, vault, refetch } = useAniWere();

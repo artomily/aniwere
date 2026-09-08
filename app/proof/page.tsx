@@ -1,4 +1,9 @@
-import { AAVE_POOL_SEPOLIA, WALLET } from "@/lib/data";
+import {
+  AAVE_POOL_SEPOLIA,
+  SAMPLE_ATTESTED_BLOCK,
+  SAMPLE_HEAD_BLOCK,
+  WALLET,
+} from "@/lib/data";
 import { networkStatus, type NetworkStatus } from "@/lib/chain";
 import { Card, CardHead, Check, ClockIcon, Eyebrow } from "../_components/ui";
 import { ManualClaim } from "../_components/Actions";
@@ -45,8 +50,8 @@ const STEPS: {
     verified: true,
     rows: [
       { k: "Chain key", v: "1 (Sepolia)" },
-      { k: "Source block", v: "11,576,800" },
-      { k: "Attested height", v: "11,576,870" },
+      { k: "Source block", v: SAMPLE_HEAD_BLOCK.toLocaleString("en-US") },
+      { k: "Attested height", v: SAMPLE_ATTESTED_BLOCK.toLocaleString("en-US") },
     ],
   },
   {
