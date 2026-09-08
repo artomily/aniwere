@@ -1,66 +1,68 @@
 # AniWere
 
-**Parametric liquidation cover untuk posisi lending cross-chain, di atas Attestcoin Protocol.**
+**Parametric liquidation cover for cross-chain lending positions, built on the Attestcoin Protocol.**
 
 *Your position lives anywhere. Your protection lives here.*
 
-> BUIDL CTC 2026 Fall — Track DeFi
+> BUIDL CTC 2026 Fall — DeFi track
+
+Indonesian version: [`README.id.md`](README.id.md)
 
 ---
 
-## Apa ini
+## What this is
 
-User membeli proteksi di **Creditcoin** untuk posisi Aave V3 mereka di **Ethereum**. Kalau posisi itu benar-benar kena likuidasi, event `LiquidationCall` dari Ethereum dibuktikan secara kriptografis lewat **Attestcoin Protocol**, dan payout cair otomatis.
+A user buys protection on **Creditcoin** for their Aave V3 position on **Ethereum**. If that position is actually liquidated, the `LiquidationCall` event from Ethereum is proven cryptographically through the **Attestcoin Protocol**, and the payout is released automatically.
 
-Tanpa klaim manual. Tanpa komite. Tanpa oracle terpusat. Tanpa bridge.
+No manual claim. No committee. No centralized oracle. No bridge.
 
 ---
 
-## Status jujur
+## Honest status
 
-Ditulis di sini, di atas, supaya tidak ada yang perlu menebak.
+Written here, at the top, so nobody has to guess.
 
 | | Status |
 |---|---|
-| Kontrak Sepolia (`AniWereProbe`) | Selesai, 4/4 test hijau |
-| Kontrak Creditcoin (`AniWereASC`, `CoverVault`, `AttestcoinAdapter`) | Selesai, 12/12 test hijau |
-| Jalur verifikasi Attestcoin | **Terbukti hidup.** Proof dari transaksi Sepolia sungguhan diterima precompile; empat variasi proof rusak semuanya revert |
-| Worker proof off-chain | Selesai, dan `status` sudah dijalankan terhadap endpoint asli |
-| Frontend | Tiga halaman, tersambung ke chain lewat wagmi. Tanpa deployment ia berjalan dalam **mode contoh** yang diberi label — lihat catatan di bawah |
-| Deployment ke testnet | **Belum.** Terhalang wallet + faucet Creditcoin |
+| Sepolia contract (`AniWereProbe`) | Done, 4/4 tests green |
+| Creditcoin contracts (`AniWereASC`, `CoverVault`, `AttestcoinAdapter`) | Done, 12/12 tests green |
+| Attestcoin verification path | **Proven live.** A proof from a real Sepolia transaction was accepted by the precompile; four corrupted proof variants all reverted |
+| Off-chain proof worker | Done, and `status` has been run against the real endpoints |
+| Frontend | Three pages, wired to chain through wagmi. Without a deployment it runs in a labelled **sample mode** — see the note below |
+| Testnet deployment | **Not yet.** Blocked on a funded wallet + Creditcoin faucet |
 
-Yang menghalangi bukan kode. `AniWereProbe`, `AniWereASC`, dan worker semuanya siap dijalankan; yang belum ada adalah wallet yang terdanai untuk membayar gas di kedua chain. Begitu wallet itu ada, urutan perintahnya sudah tertulis di [Deploy](#deploy) dan tidak ada satu pun yang perlu ditulis ulang.
+What blocks us is not the code. `AniWereProbe`, `AniWereASC`, and the worker are all ready to run; what is missing is a funded wallet to pay gas on both chains. Once that exists, the command sequence is already written under [Deploy](#deploy) and none of it needs rewriting.
 
-Frontend punya dua mode, dan yang menentukan hanya satu env var:
+The frontend has two modes, decided by a single env var:
 
-- **Mode contoh** (`NEXT_PUBLIC_ASC_ADDRESS` kosong) — angka posisi dan polis adalah data contoh, dan setiap halaman memakai banner yang mengatakan itu. Tombol on-chain mati.
-- **Mode live** (env terisi) — seluruh angka dibaca dari kontrak lewat wallet yang tersambung. Banner hilang. Probe, buy cover, dan submit claim semuanya berjalan dari browser.
+- **Sample mode** (`NEXT_PUBLIC_ASC_ADDRESS` empty) — position and policy figures are illustrative, and every page carries a banner saying so. On-chain buttons are disabled.
+- **Live mode** (env filled) — every number is read from the contracts through a connected wallet. The banner disappears. Probe, buy cover, and submit claim all work from the browser.
 
-Yang **selalu** nyata di kedua mode: tinggi blok di header dan panel attestation di Proof Explorer. Keduanya dibaca dari Sepolia dan Proof Builder di tiap request, tanpa wallet dan tanpa deployment.
-
----
-
-## Apa yang sebenarnya dibuktikan
-
-Ini bagian yang paling sering disalahpahami, jadi ditulis eksplisit.
-
-**Attestcoin Readability membuktikan bahwa sebuah transaksi terjadi di block source chain**, lewat dua proof yang bekerja bersama:
-
-- **Continuity proof** — block itu memang bagian dari rantai Ethereum yang sudah ter-attest di Creditcoin
-- **Merkle proof** — transaksi itu memang termasuk di dalam block tersebut
-
-Keduanya diverifikasi **sinkron** oleh Block Prover Precompile di `0x…0FD2`, jadi verifikasi dan payout terjadi dalam satu transaksi Creditcoin yang sama.
-
-**Yang bisa dibuktikan:** event di receipt log sebuah transaksi.
-**Yang TIDAK bisa dibuktikan:** storage slot.
-
-Konsekuensinya, `IPool.getUserAccountData(user)` tidak bisa dibuktikan secara langsung, karena itu view call terhadap storage dan tidak meninggalkan jejak di receipt log mana pun. Karena itu kami memakai **prober pattern**: kontrak di Sepolia memanggil Aave lalu meng-emit hasilnya sebagai event, dan event itulah yang dibuktikan.
-
-Precompile mengembalikan `bool`, **bukan** log. Receipt harus di-decode sendiri di sisi Creditcoin. Itu tugas `AttestcoinAdapter`, dan seluruh ketidakpastian Attestcoin berhenti di file itu — `AniWereASC` tidak tahu-menahu soal precompile.
+What is **always** real in both modes: the block heights in the header and the attestation panel in the Proof Explorer. Both are read from Sepolia and the Proof Builder on every request, with no wallet and no deployment.
 
 ---
 
-## Arsitektur
+## What is actually proven
+
+This is the part that gets misunderstood most often, so it is stated explicitly.
+
+**Attestcoin Readability proves that a transaction occurred in a source-chain block**, through two proofs working together:
+
+- **Continuity proof** — the block really is part of the Ethereum chain already attested on Creditcoin
+- **Merkle proof** — the transaction really is inside that block
+
+Both are verified **synchronously** by the Block Prover Precompile at `0x…0FD2`, so verification and payout happen inside the same Creditcoin transaction.
+
+**What can be proven:** events in a transaction's receipt logs.
+**What CANNOT be proven:** storage slots.
+
+As a consequence, `IPool.getUserAccountData(user)` cannot be proven directly — it is a view call against storage and leaves no trace in any receipt log. That is why we use the **prober pattern**: a contract on Sepolia calls Aave and emits the result as an event, and that event is what gets proven.
+
+The precompile returns a `bool`, **not** the log. The receipt has to be decoded on the Creditcoin side. That is `AttestcoinAdapter`'s job, and all Attestcoin uncertainty stops in that file — `AniWereASC` knows nothing about the precompile.
+
+---
+
+## Architecture
 
 ```
 ETHEREUM SEPOLIA                 WORKER              CREDITCOIN
@@ -69,66 +71,75 @@ AniWereProbe.probe(user)
   └─ call Aave V3
   └─ emit PositionProbedForCover ──┐
                                    ├─► filter log
-Aave V3 Pool                       │   tunggu attestation (~8 mnt)
-  └─ emit LiquidationCall ─────────┘   minta proof
+Aave V3 Pool                       │   wait for attestation (~8 min)
+  └─ emit LiquidationCall ─────────┘   request proof
                                        submit ──────► AniWereASC
                                                         ├─ AttestcoinAdapter
-                                                        │    ├─ Block Prover (sinkron)
+                                                        │    ├─ Block Prover (synchronous)
                                                         │    └─ decode receipt
                                                         ├─ _findLog: emitter + topic0
-                                                        ├─ validasi polis
+                                                        ├─ validate policy
                                                         └─ CoverVault.payClaim()
 ```
 
-Diagram lengkap ada di [`docs/diagrams/`](docs/diagrams/).
+![AniWere architecture](docs/diagrams/1-arsitektur.png)
+
+Two detailed flows — buying cover, and claim/payout — exist as separate diagrams:
+
+| Flow | Diagram |
+|---|---|
+| Buy cover | [`2-flow-beli-cover.png`](docs/diagrams/2-flow-beli-cover.png) |
+| Claim & payout | [`3-flow-klaim-payout.png`](docs/diagrams/3-flow-klaim-payout.png) |
+
+The `.mermaid` sources live in [`docs/diagrams/`](docs/diagrams/); the PNGs are rendered with `mmdc -t default -b white -s 3`.
 
 ---
 
-## Keputusan desain
+## Design decisions
 
 ### No privileged access
 
-`CoverVault` di-deploy **oleh** `AniWereASC` di dalam constructor-nya, sehingga alamat ASC di vault bersifat `immutable` dan tidak ada setter sama sekali.
+`CoverVault` is deployed **by** `AniWereASC` inside its constructor, so the ASC address stored in the vault is `immutable` and there is no setter at all.
 
-- Tidak ada `owner`, `onlyOwner`, `pause`, atau upgrade
-- Tidak ada fungsi withdraw untuk tim
-- Dana hanya keluar lewat dua jalan: payout yang dipicu proof valid, atau penarikan underwriter atas modal yang tidak sedang terkunci
+- No `owner`, `onlyOwner`, `pause`, or upgrade path
+- No withdrawal function for the team
+- Funds leave through exactly two routes: a payout triggered by a valid proof, or an underwriter reclaiming capital that is not currently locked
 
-Tim AniWere secara teknis tidak bisa menyentuh dana siapa pun. Kalau ada yang bertanya kenapa harus percaya kami: tidak perlu, dan itu justru intinya.
+The AniWere team technically cannot touch anyone's funds. If someone asks why they should trust us: they should not have to, and that is the whole point.
 
-### Worker tidak dipercaya
+### The worker is not trusted
 
-Off-chain worker cuma kurir. Kalau dia mengirim proof palsu, precompile menolak dan transaksi revert. Dia juga mengirim **seluruh receipt**, bukan satu log pilihan — pemilihan log dilakukan `_findLog` di dalam kontrak, jadi worker tidak punya kesempatan untuk memilihkan.
+The off-chain worker is only a courier. If it submits a forged proof, the precompile rejects it and the transaction reverts. It also submits the **entire receipt**, not a hand-picked log — log selection happens in `_findLog` inside the contract, so the worker never gets to choose on our behalf.
 
-Satu-satunya hal yang bisa dilakukan worker jahat adalah tidak mengirim. Dan karena `submitLiquidationClaim` permissionless, siapa pun bisa menggantikannya.
+The only thing a malicious worker can do is not submit. And because `submitLiquidationClaim` is permissionless, anyone can take its place.
 
 ### Solvency guard
 
-Total cover aktif tidak boleh melebihi modal bebas di vault. Vault secara matematis tidak bisa insolvent.
+Total active cover can never exceed the vault's free capital. The vault cannot become insolvent by construction.
 
-### Tidak pernah menghitung ulang health factor
+### Health factor is never recomputed
 
-Kami memakai angka dari `getUserAccountData` apa adanya, sehingga HF yang dibuktikan identik dengan yang dipakai Aave untuk memutuskan likuidasi. Menghitung ulang dengan sumber harga lain akan langsung mengembalikan trust assumption yang mau dihilangkan.
+We use the number from `getUserAccountData` as-is, so the health factor we prove is identical to the one Aave uses to decide a liquidation. Recomputing it from another price source would immediately reintroduce the trust assumption we set out to remove.
 
-### Frontend tidak pernah jadi jalur wajib
+### The frontend is never a required path
 
-Tiga aksi on-chain di UI — probe, submit position proof, submit liquidation claim — semuanya punya padanan satu baris di worker, dan halaman yang bersangkutan menampilkan perintahnya. Ini bukan duplikasi yang kelewat: `submitPositionProof` dan `submitLiquidationClaim` memang permissionless, jadi pemegang polis tidak pernah bergantung pada frontend maupun worker kami untuk dibayar.
+All three on-chain actions in the UI — probe, submit position proof, submit liquidation claim — have a one-line worker equivalent, and the relevant page shows the command. This is not accidental duplication: `submitPositionProof` and `submitLiquidationClaim` are deliberately permissionless, so a policy holder never depends on our frontend or our worker to get paid.
 
-Proof diambil lewat route server sendiri (`/api/attestcoin/*`) karena Proof Builder tidak mengirim header CORS. Route itu tidak menambah wewenang apa pun — proof yang lewat sana tetap harus lolos precompile di kontrak.
+Proofs are fetched through our own server routes (`/api/attestcoin/*`) because the Proof Builder does not send CORS headers. Those routes grant no additional authority — a proof passing through them still has to satisfy the precompile inside the contract.
 
-### Pengecekan emitter
+### Emitter check
 
-`_findLog` mencocokkan **emitter dan topic0**, bukan topic0 saja. Tanpa itu, siapa pun bisa deploy kontrak di Sepolia yang meng-emit event dengan signature sama dan menguras vault.
+`_findLog` matches **both the emitter and topic0**, not topic0 alone. Without it, anyone could deploy a contract on Sepolia that emits an event with the same signature and drain the vault.
 
-Ini lebih ketat daripada contoh resmi Attestcoin, yang `getLogsByEventSignature`-nya menyaring topic0 saja. Ada tesnya: `test_RejectsLiquidationFromWrongEmitter`.
+This is stricter than the official Attestcoin example, whose `getLogsByEventSignature` filters on topic0 only. There is a test for it: `test_RejectsLiquidationFromWrongEmitter`.
 
-### Anti-replay mengikat blok, bukan cuma transaksi
+### Anti-replay binds the block, not just the transaction
 
-`proofId` adalah hash dari chainKey + height + merkle root + isi transaksi. Kalau ia hanya hash dari raw transaction, transaksi yang sama masih bisa dikirim ulang lewat blok berbeda. Ada tesnya: `test_SameTransactionAtDifferentHeightIsSeparateProof`.
+`proofId` is a hash of chainKey + height + merkle root + transaction contents. If it were only a hash of the raw transaction, the same transaction could be replayed through a different block. There is a test for it: `test_SameTransactionAtDifferentHeightIsSeparateProof`.
 
 ---
 
-## Struktur repo
+## Repository layout
 
 ```
 aniwere/
@@ -136,162 +147,173 @@ aniwere/
 ├── contracts-sepolia/      Foundry — AniWereProbe.sol
 ├── contracts-creditcoin/   Foundry — AniWereASC.sol, CoverVault.sol, AttestcoinAdapter.sol
 ├── worker/                 Off-chain proof worker (TypeScript + viem)
+├── video/                  Demo video (Remotion + macOS TTS)
 └── docs/
-    ├── PRD.md              Konteks produk
-    ├── ATTESTCOIN.md       Catatan validasi live — dokumen paling penting kedua setelah ini
-    ├── DEMO.md             Runbook deploy + demo
-    ├── SPRINT.md           Rencana harian
+    ├── PRD.md              Product context
+    ├── ATTESTCOIN.md       Live validation notes — the second most important document after this one
+    ├── DEMO.md             Deploy + demo runbook
+    ├── SUBMISSION.md       DoraHacks submission draft
+    ├── VIDEO-SCRIPT.md     Screencast script
+    ├── SPRINT.md           Daily plan
     └── diagrams/
 ```
 
-Dua project Foundry terpisah, bukan satu. Config network dan target EVM-nya berbeda, dan menggabungkannya membuat deploy gampang tertukar.
+Two separate Foundry projects, not one. Their network configs and EVM targets differ, and merging them makes it easy to deploy to the wrong chain.
 
 ---
 
-## Hasil test
+## Test results
 
 ```
 contracts-sepolia      4 passed, 0 failed
 contracts-creditcoin  12 passed, 0 failed
 ```
 
-Yang dijaga oleh test, bukan sekadar dihitung:
+What the tests guard, rather than merely count:
 
-| Test | Yang dicegah |
+| Test | What it prevents |
 |---|---|
-| `test_RejectsLiquidationFromWrongEmitter` | Kontrak palsu di Sepolia menguras vault |
-| `test_RejectsReplayedProof` | Satu likuidasi dibayar dua kali |
-| `test_SameTransactionAtDifferentHeightIsSeparateProof` | `proofId` yang terlalu lemah |
-| `test_CannotOversellCover` | Vault menjual proteksi melebihi modalnya |
-| `test_UnderwriterCannotWithdrawLockedCapital` | Modal ditarik saat masih menjamin polis aktif |
-| `test_CannotBuyCoverWhenAlreadyUnhealthy` | Beli proteksi ketika likuidasi praktis sudah pasti |
-| `test_CannotBuyCoverWithStaleSnapshot` | Beli proteksi dengan angka posisi yang basi |
-| `test_OnlyASCCanTouchVault` | Siapa pun selain ASC memindahkan dana |
+| `test_RejectsLiquidationFromWrongEmitter` | A fake contract on Sepolia draining the vault |
+| `test_RejectsReplayedProof` | One liquidation being paid twice |
+| `test_SameTransactionAtDifferentHeightIsSeparateProof` | A `proofId` that is too weak |
+| `test_CannotOversellCover` | The vault selling more protection than its capital |
+| `test_UnderwriterCannotWithdrawLockedCapital` | Capital withdrawn while it still backs an active policy |
+| `test_CannotBuyCoverWhenAlreadyUnhealthy` | Buying protection when liquidation is practically certain |
+| `test_CannotBuyCoverWithStaleSnapshot` | Buying protection against stale position figures |
+| `test_OnlyASCCanTouchVault` | Anyone but the ASC moving funds |
 
-Semua test berjalan di atas `MockProver`. Precompile pallet-evm tidak punya bytecode, jadi fork test Foundry tidak bisa menyentuhnya — jalur decoding receipt yang sesungguhnya baru terbukti saat deployment ke testnet.
+All tests run against `MockProver`. The pallet-evm precompile has no bytecode, so Foundry fork tests cannot reach it — the real receipt-decoding path is only proven at testnet deployment.
 
 ---
 
 ## Setup
 
 ```bash
-# Sisi source chain
+# Source-chain side
 cd contracts-sepolia
 forge install foundry-rs/forge-std --no-git
-cp .env.example .env      # isi dulu
+cp .env.example .env      # fill it in first
 forge build && forge test
 
-# Sisi Creditcoin
+# Creditcoin side
 cd ../contracts-creditcoin
 forge install foundry-rs/forge-std --no-git
-cp .env.example .env      # isi dulu
+cp .env.example .env      # fill it in first
 forge build && forge test
 
 # Worker
 cd ../worker
 npm install
 cp .env.example .env
-npm run status            # cek Sepolia, Proof Builder, Creditcoin. Tidak butuh wallet.
+npm run status            # checks Sepolia, Proof Builder, Creditcoin. No wallet needed.
 ```
 
-Kalau repo ini sudah berupa git repo, hapus `--no-git` agar dependency masuk sebagai submodule.
+If this is already a git repo, drop `--no-git` so dependencies are added as submodules.
 
 ### Deploy
 
 ```bash
-# 1. Probe ke Sepolia
+# 1. Probe to Sepolia
 cd contracts-sepolia
 forge script script/DeployProbe.s.sol:DeployProbe --rpc-url sepolia --broadcast --verify
 
-# 2. Masukkan alamatnya ke contracts-creditcoin/.env sebagai SOURCE_PROBE_SEPOLIA
-#    dan ke worker/.env sebagai PROBE_ADDRESS
+# 2. Put the address into contracts-creditcoin/.env as SOURCE_PROBE_SEPOLIA
+#    and into worker/.env as PROBE_ADDRESS
 
-# 3. ASC ke Creditcoin
+# 3. ASC to Creditcoin
 cd ../contracts-creditcoin
 forge script script/DeployASC.s.sol:DeployASC --rpc-url creditcoin_testnet --broadcast --legacy
 
-# 4. Fund vault sebelum demo
+# 4. Fund the vault before the demo
 cast send <vault> "depositCapital()" --value 500ether --rpc-url creditcoin_testnet --private-key $PRIVATE_KEY
 ```
 
-`EvmV1Decoder` adalah library dengan fungsi public, jadi forge men-deploy-nya lebih dulu dan me-link otomatis. Kalau estimasi gas gagal, tambahkan `--gas-estimate-multiplier 135`.
+`EvmV1Decoder` is a library with public functions, so forge deploys and links it automatically. If gas estimation fails, add `--gas-estimate-multiplier 135`.
 
-### Menjalankan alur penuh
+### Running the full flow
 
 ```bash
 cd worker
-npm run worker -- status                      # semua hijau dulu
-npm run worker -- probe 0xUSER                # emit event di Sepolia
-npm run worker -- submit-position 0xTX        # tunggu attest, buktikan, simpan di Creditcoin
-npm run worker -- watch                       # loop: pantau probe + likuidasi
+npm run worker -- status                      # everything green first
+npm run worker -- probe 0xUSER                # emit the event on Sepolia
+npm run worker -- submit-position 0xTX        # wait for attestation, prove, store on Creditcoin
+npm run worker -- watch                       # loop: watch probes + liquidations
 ```
 
-Detail worker ada di [`worker/README.md`](worker/README.md).
+Worker details are in [`worker/README.md`](worker/README.md).
 
-Runbook lengkap dari wallet kosong sampai rekaman selesai — termasuk apa yang
-harus dilakukan kalau likuidasi tidak bisa dipicu atau precompile menolak — ada
-di [`docs/DEMO.md`](docs/DEMO.md).
+The full runbook, from an empty wallet through to a finished recording — including what to do if a liquidation cannot be triggered or the precompile rejects — is in [`docs/DEMO.md`](docs/DEMO.md).
 
 ---
 
-## Ekspektasi latency
+## Latency expectations
 
-Jangan pakai kata "real-time".
+Do not use the phrase "real-time".
 
-| Tahap | Terukur |
+| Stage | Measured |
 |---|---|
-| Blok sumber masuk Sepolia | 0 |
-| Ter-attest di Creditcoin | ~38–40 blok, **~8 menit** |
-| Verifikasi proof + payout | satu block Creditcoin (~15 detik) |
-| **Total** | **~8 menit** |
+| Source block lands on Sepolia | 0 |
+| Attested on Creditcoin | ~35–40 blocks, **~8 minutes** |
+| Proof verification + payout | one Creditcoin block (~15 seconds) |
+| **Total** | **~8 minutes** |
 
-Framing yang benar:
+The correct framing:
 
 > **Verified one Creditcoin block after the source block is attested — about 8 minutes after it lands on Ethereum.**
 
-Dua pengukuran independen, 27 Agustus dan 4 September, dengan alat ukur berbeda. Angkanya praktis identik. Rinciannya di [`docs/ATTESTCOIN.md`](docs/ATTESTCOIN.md) bagian 4.
+Three independent measurements (27 August, 4 September, 8 September) using different instruments. The numbers are practically identical. Details in [`docs/ATTESTCOIN.md`](docs/ATTESTCOIN.md) section 4.
 
-Kami **tidak** memakai kalimat *"within one Creditcoin block of Ethereum finality"*, walaupun kalimat itu enak dibaca. Attestation terukur berjalan 25–30 blok **di depan** `finalized`, jadi kalimat itu menjanjikan jaminan yang protokolnya memang tidak berikan. Konsekuensinya ada di daftar keterbatasan di bawah, nomor 2.
+We do **not** use the sentence *"within one Creditcoin block of Ethereum finality"*, however well it reads. Attestation measurably runs 25–54 blocks **ahead of** `finalized`, so that sentence would promise a guarantee the protocol does not actually give. The consequence is in the limitations list below, item 2.
 
 ---
 
-## Keterbatasan yang kami akui
+## Limitations we acknowledge
 
-1. **Snapshot, bukan streaming.** Health factor terverifikasi berlaku pada block tertentu. Di antara dua probe, kami tidak tahu apa-apa. Ini konsekuensi langsung dari model event proof.
-2. **Attestation mendahului finality Ethereum.** Proof bisa lolos untuk blok yang secara teori masih bisa ter-reorg. Kedalaman 25–30 blok jauh di luar reorg yang wajar di Ethereum, tapi "jauh di luar" bukan "mustahil", dan kami memilih menuliskannya daripada bersembunyi di balik kata *finality*.
-3. **Kami tidak mencegah likuidasi.** Kami membayar setelahnya. Pencegahan butuh Attestcoin Writability, di luar scope hackathon.
-4. **Premi flat 2%, bukan risk-priced.** Model pricing sungguhan butuh data historis dan analisis kuantitatif.
-5. **Sisi underwriter disederhanakan.** Vault di-fund manual. Belum ada share accounting, lock period, atau ekonomi underwriting yang sesungguhnya.
-6. **Satu chain, satu protokol.** Arsitekturnya generalizable, implementasinya belum.
-7. **Jalur decoding receipt belum diuji di jaringan asli.** Precompile tidak punya bytecode, jadi test lokal berhenti di `MockProver`. Ini risiko terbuka terbesar yang tersisa.
+1. **Snapshots, not a stream.** A verified health factor is true at a specific block. Between two probes we know nothing. This is a direct consequence of the event-proof model.
+2. **Attestation runs ahead of Ethereum finality.** A proof can pass for a block that is theoretically still reorgable. A depth of 25–54 blocks is far outside any plausible Ethereum reorg, but "far outside" is not "impossible", and we would rather write it down than hide behind the word *finality*.
+3. **We do not prevent liquidations.** We pay afterwards. Prevention requires Attestcoin Writability, outside this hackathon's scope.
+4. **Flat 2% premium, not risk-priced.** Real pricing needs historical data and quantitative analysis.
+5. **The underwriter side is simplified.** The vault is funded manually. There is no share accounting, lock period, or real underwriting economics yet.
+6. **One chain, one protocol.** The architecture generalizes; the implementation does not yet.
+7. **The receipt-decoding path is untested on a real network.** The precompile has no bytecode, so local tests stop at `MockProver`. This is the largest open risk remaining.
 
 ---
 
 ## Roadmap
 
-Empat item, masing-masing lahir dari keterbatasan di atas.
+Four items, each born from a limitation above.
 
-1. **Multi source chain** (Arbitrum, Base, Polygon) — satu pool modal yang menjamin banyak chain adalah alasan Creditcoin dipakai sejak awal.
-2. **Capital efficiency** — modal underwriter menganggur sepanjang periode polis, dan opportunity cost itu jadi lantai harga yang dibayar user lewat premi. Men-deploy idle capital ke yield strategy konservatif menurunkan lantai itu. Catatan risiko: ini menambah exposure baru, karena exploit di protokol tujuan akan menghilangkan dana klaim justru saat paling dibutuhkan. Karena itu strateginya harus konservatif dan porsinya dibatasi.
-3. **Risk-priced premium** — flat rate tidak adil untuk posisi konservatif dan terlalu murah untuk posisi agresif.
-4. **Automated protection via Writability** — mencegah lebih baik daripada mengganti.
+1. **Multiple source chains** (Arbitrum, Base, Polygon) — a single capital pool underwriting many chains is why Creditcoin was chosen in the first place.
+2. **Capital efficiency** — underwriter capital sits idle for the whole policy period, and that opportunity cost becomes a price floor the user pays through premiums. Deploying idle capital into conservative yield strategies lowers that floor. Risk note: this adds new exposure, because an exploit in the destination protocol would erase claim funds exactly when they are most needed. The strategy therefore has to stay conservative and capped.
+3. **Risk-priced premiums** — a flat rate is unfair to conservative positions and too cheap for aggressive ones.
+4. **Automated protection via Writability** — preventing beats reimbursing.
 
 ---
 
-## Alamat yang dipakai
+## Addresses used
 
-| Kontrak | Alamat | Cara verifikasi |
+| Contract | Address | How it was verified |
 |---|---|---|
-| Aave V3 Pool (Sepolia) | `0x6Ae43d3271ff6888e7Fc43Fd7321a503ff738951` | `PoolAddressesProvider.getPool()`, dipanggil langsung |
+| Aave V3 Pool (Sepolia) | `0x6Ae43d3271ff6888e7Fc43Fd7321a503ff738951` | `PoolAddressesProvider.getPool()`, called directly |
 | Aave PoolAddressesProvider | `0x012bAC54348C0E635dCAc9D5FB99f06F24136C9A` | — |
-| Block Prover Precompile | `0x0000000000000000000000000000000000000FD2` | `eth_call` dengan proof asli → `true` |
+| Block Prover Precompile | `0x0000000000000000000000000000000000000FD2` | `eth_call` with a real proof → `true` |
 | Chain Info Precompile | `0x0000000000000000000000000000000000000FD3` | `get_supported_chains()` |
-| chainKey Sepolia | `1` | Dari `get_supported_chains()`. **Bukan** chain ID 11155111 |
+| Sepolia chainKey | `1` | From `get_supported_chains()`. **Not** chain ID 11155111 |
 
-Tidak satu pun disalin dari dokumentasi tanpa dicek.
+Not one of these was copied from documentation without being checked.
 
 ---
 
-## Lisensi
+## Demo video
+
+A 97-second demo video lives in [`video/`](video/), rendered with Remotion. The voice-over uses the macOS built-in TTS, so there is no paid service and no API key. Scene timing is derived from measured audio length rather than hand-tuned, so changing a narration line only requires re-running `npm run voice`.
+
+```bash
+cd video && npm install && npm run build
+```
+
+---
+
+## License
 
 MIT
