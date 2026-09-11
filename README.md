@@ -1,4 +1,4 @@
-# AniWere
+<p align="center"><img src="docs/diagrams/aniwere-logo.png" alt="AniWere" width="260"></p>
 
 **Parametric liquidation cover for cross-chain lending positions, built on the Attestcoin Protocol.**
 

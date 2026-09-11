@@ -8,7 +8,7 @@
  */
 
 import React from "react";
-import { AbsoluteFill, interpolate, Easing, useCurrentFrame } from "remotion";
+import { AbsoluteFill, Easing, Img, interpolate, staticFile, useCurrentFrame } from "remotion";
 import { C, EASE, GRADIENT } from "./theme";
 import { Card, Eyebrow, Kinetic, mono, poppins, rise, Rule, Shot, Terminal } from "./components";
 
@@ -578,24 +578,16 @@ export const Close: React.FC = () => {
 
   return (
     <AbsoluteFill style={{ ...center, flexDirection: "column", gap: 44 }}>
-      <div
+      <Img
+        src={staticFile("shots/mark.png")}
         style={{
           ...rise(frame, 0, 20),
-          width: 132,
-          height: 132,
-          borderRadius: 34,
-          background: GRADIENT,
-          display: "grid",
-          placeItems: "center",
-          fontSize: 66,
-          fontWeight: 700,
-          color: "#0b0d14",
+          width: 170,
+          height: 170,
           transform: `scale(${mark})`,
-          boxShadow: `0 0 90px -14px ${C.accent}`,
+          filter: `drop-shadow(0 0 48px ${C.accent}88)`,
         }}
-      >
-        A
-      </div>
+      />
 
       <div style={{ ...rise(frame, 14, 26), textAlign: "center" }}>
         <div style={{ fontSize: 116, fontWeight: 700, letterSpacing: "-0.04em", color: C.ink }}>

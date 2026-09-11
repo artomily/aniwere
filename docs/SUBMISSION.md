@@ -11,21 +11,18 @@ ditebak dari hackathon lain.
 
 ## Yang memblokir submit
 
-Tiga hal ini bukan soal kualitas, tapi soal apakah submission-nya sah dan bisa
+Dua hal ini bukan soal kualitas, tapi soal apakah submission-nya sah dan bisa
 dibuka juri. Urut dari yang paling mematikan.
 
 | # | Blocker | Kenapa fatal | Perbaikan |
 |---|---|---|---|
 | 1 | **Belum di-deploy ke testnet** | Panitia menulis "Must be deployed on a testnet" sebagai project requirement, bukan saran. Tanpa ini submission bisa dianggap tidak memenuhi syarat berapa pun bagusnya kode | Runbook 90 menit di [DEMO.md](DEMO.md). Butuh wallet + faucet |
 | 2 | **Repo GitHub masih private** | `github.com/artomily/aniwere` mengembalikan **404** untuk publik. GitHub URL wajib dan harus ada README. Juri akan lihat halaman kosong | Settings → General → Change visibility → Public |
-| 3 | **Belum ada video** | "Prototype Demo Video URL" adalah field wajib | Skrip di [VIDEO-SCRIPT.md](VIDEO-SCRIPT.md) |
 
 Blocker 2 gratis dan makan waktu 30 detik. Kerjakan sekarang, jangan nanti.
 
-Satu hal lagi yang bukan blocker tapi berbobot: **README masih berbahasa
-Indonesia.** Juri dari Creditcoin dan Credit Labs berbahasa Inggris, dan README
-adalah satu-satunya dokumen yang pasti mereka buka. UI-nya sudah bahasa Inggris,
-jadi ini satu-satunya bagian yang tidak konsisten.
+Sudah beres: video (`video/out/aniwere-demo.mp4`, tinggal upload), README
+bahasa Inggris, whitepaper PDF, dan logo.
 
 ---
 
@@ -36,6 +33,35 @@ jadi ini satu-satunya bagian yang tidak konsisten.
 ```
 AniWere
 ```
+
+### One-liner / Tagline
+
+Field ringkas di profil BUIDL DoraHacks. 93 karakter — aman untuk batas pendek
+mana pun.
+
+```
+Liquidation cover for Aave positions on Ethereum, paid on Creditcoin by cryptographic proof.
+```
+
+Kalau ada field tagline terpisah yang lebih pendek lagi, pakai slogan produk:
+
+```
+Your position lives anywhere. Your protection lives here.
+```
+
+### Vision
+
+~230 karakter. Batas pasti field ini belum saya verifikasi dari form — kalau
+terpotong, buang kalimat kedua.
+
+```
+Every lending position, on any chain, should be insurable without trusting anyone. AniWere pays out when a liquidation is proven, not when a committee agrees — starting with Aave on Ethereum, settled on Creditcoin through Attestcoin.
+```
+
+Kenapa dua kalimat ini: kalimat pertama adalah ambisi (multi-chain, tanpa
+kepercayaan), kalimat kedua mengikatnya ke apa yang sudah dibangun hari ini.
+Juri membaca vision tanpa bukti sebagai janji kosong; yang ini langsung
+menunjuk implementasinya.
 
 ### Project Sector
 
@@ -184,7 +210,10 @@ setelah submit, jadi ini bisa menyusul.
 
 ### Project Logo
 
-Opsional. Kalau mau cepat, ambil mark `A` biru dari header UI.
+Unggah **`public/aniwere-mark.png`** — emblem saja, 512×512, latar transparan.
+Slot logo DoraHacks berbentuk kotak kecil, dan versi dengan wordmark
+(`public/aniwerelogo.png`) jadi terlalu kecil untuk terbaca di sana. Tulisannya
+juga gelap, jadi hilang kalau ditampilkan di atas latar gelap.
 
 ---
 
@@ -201,9 +230,42 @@ Residence · Country of Citizenship
 
 Team Size minimum 1 — solo diperbolehkan.
 
-Untuk **Short Bio** dan **Role**, kalau solo, sebut peran teknis yang sebenarnya
-kamu kerjakan (kontrak, worker, frontend) daripada menulis "Founder". Juri teknis
-lebih percaya yang pertama.
+### Draft yang bisa diisi dari repo
+
+Seluruh 16 commit di repo ini dari satu author (`artomily`), jadi draft di bawah
+mengasumsikan tim solo. Isinya hanya hal yang bisa diverifikasi dari repo.
+
+**Team Size**
+
+```
+1
+```
+
+**Role**
+
+```
+Full-stack smart contract engineer
+```
+
+**Short Bio** (~390 karakter)
+
+```
+Solo builder of AniWere. Wrote both Foundry projects — the Sepolia prober and the Creditcoin control plane with its Attestcoin adapter — plus the off-chain proof worker (TypeScript + viem) and the Next.js frontend. Validated the Attestcoin verification path live against the Block Prover precompile before writing product code, and documented what it proves and what it cannot.
+```
+
+Bio ini sengaja hanya menyebut apa yang dibangun di hackathon ini. Pengalaman
+sebelumnya, pekerjaan, atau pendidikan belum ada di draft — tambahkan satu
+kalimat di awal kalau mau.
+
+### Masih harus kamu isi sendiri
+
+| Field | Status |
+|---|---|
+| First & Last Name | Sesuai identitas |
+| Email | Dari profil DoraHacks-mu |
+| Country of Residence | — |
+| Country of Citizenship | — |
+| Telegram / X / LinkedIn / Resume | Opsional |
 
 ---
 

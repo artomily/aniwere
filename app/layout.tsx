@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { headers } from "next/headers";
 import { cookieToInitialState } from "wagmi";
 import { wagmiConfig } from "@/lib/wagmi";
@@ -49,9 +50,16 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
           <div className="rounded-[28px] bg-panel px-5 py-6 shadow-soft sm:px-8 sm:py-7">
             <header className="flex flex-wrap items-center gap-3">
               <div className="mr-auto flex items-center gap-3">
-                <div className="grid h-11 w-11 place-items-center rounded-2xl bg-accent font-display text-[17px] font-semibold text-white">
-                  A
-                </div>
+                {/* Hanya emblem: wordmark di aniwerelogo.png berwarna gelap dan hilang
+                    di tema dark, sementara nama sudah ditulis sebagai teks di sebelahnya. */}
+                <Image
+                  src="/aniwere-mark.png"
+                  alt=""
+                  width={44}
+                  height={44}
+                  priority
+                  className="h-11 w-11"
+                />
                 <div>
                   <b className="block font-display text-[19px] leading-tight font-semibold tracking-[-0.01em]">
                     AniWere
