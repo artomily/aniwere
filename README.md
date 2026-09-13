@@ -31,9 +31,9 @@ Written here, at the top, so nobody has to guess.
 | Attestcoin verification path | **Proven live.** A proof from a real Sepolia transaction was accepted by the precompile; four corrupted proof variants all reverted |
 | Off-chain proof worker | Done, and `status` has been run against the real endpoints |
 | Frontend | Three pages, wired to chain through wagmi. Without a deployment it runs in a labelled **sample mode** — see the note below |
-| Testnet deployment | **Not yet.** Blocked on a funded wallet + Creditcoin faucet |
+| Testnet deployment | **Deployed** 13 September — Sepolia probe + Creditcoin ASC, adapter, and vault. Addresses below |
 
-What blocks us is not the code. `AniWereProbe`, `AniWereASC`, and the worker are all ready to run; what is missing is a funded wallet to pay gas on both chains. Once that exists, the command sequence is already written under [Deploy](#deploy) and none of it needs rewriting.
+All contracts are live on testnet and their wiring was checked on-chain after deployment: the ASC points at the deployed probe and at Aave's Sepolia pool, the vault's controller is the ASC, and the adapter uses chain key 1 against the precompile at `0x…0FD2`. See [Deployed contracts](#deployed-contracts).
 
 The frontend has two modes, decided by a single env var:
 
@@ -291,6 +291,22 @@ Four items, each born from a limitation above.
 4. **Automated protection via Writability** — preventing beats reimbursing.
 
 ---
+
+## Deployed contracts
+
+Deployed 13 September 2026 from `0xf122a903448e0A43DC275897Df2e9E9FCCFe972c`.
+
+| Contract | Chain | Address | Deploy tx |
+|---|---|---|---|
+| `AniWereProbe` | Sepolia | [`0xa4a3eB202d89066909c5FDdEAdfDf79Fa3da025a`](https://sepolia.etherscan.io/address/0xa4a3eB202d89066909c5FDdEAdfDf79Fa3da025a) | [`0xcc83…a0e9`](https://sepolia.etherscan.io/tx/0xcc83fcc2216561c3329a0bca6779d033340bb75e1d23c2f48b6c344164cca0e9) |
+| `AniWereASC` | Creditcoin CC3 | [`0x1A5D249A8e711E2288AdD7c01e31Eb7FFB05D97E`](https://creditcoin-testnet.blockscout.com/address/0x1A5D249A8e711E2288AdD7c01e31Eb7FFB05D97E) | [`0x8f79…c16e`](https://creditcoin-testnet.blockscout.com/tx/0x8f7926e198a596cabe4acebadda457d9e615ddc46812f8779f6d88d40653c16e) |
+| `CoverVault` | Creditcoin CC3 | [`0xBBCCd15B6bf49d7df3F9b7685455c25a2b4e085e`](https://creditcoin-testnet.blockscout.com/address/0xBBCCd15B6bf49d7df3F9b7685455c25a2b4e085e) | created by the ASC constructor, same tx |
+| `AttestcoinAdapter` | Creditcoin CC3 | [`0x45dd5B746490f93c90Ea5c21212c25C72160BEe5`](https://creditcoin-testnet.blockscout.com/address/0x45dd5B746490f93c90Ea5c21212c25C72160BEe5) | [`0xc16e…ae14`](https://creditcoin-testnet.blockscout.com/tx/0xc16e5786e05497e65afb568b68f70fe8faa5b22e63c94f0ae61a915caf07ae14) |
+| `EvmV1Decoder` (library) | Creditcoin CC3 | [`0xecd2a32b774f216f1b0be897077e3af9c3502ff4`](https://creditcoin-testnet.blockscout.com/address/0xecd2a32b774f216f1b0be897077e3af9c3502ff4) | [`0x1aec…5ef4`](https://creditcoin-testnet.blockscout.com/tx/0x1aec2a12786da59fc4bfb184d85a532c8d66d471a6206d691f447fea9e4a5ef4) |
+
+The vault was seeded with 500 CTC of underwriter capital via `depositCapital()` in [`0x2e43…04c1`](https://creditcoin-testnet.blockscout.com/tx/0x2e43e26e06d48b2b488d931f20b78951c1237f6b4b9e583755b06eb4736104c1).
+
+The Creditcoin contracts were deployed with `--evm-version london`. Foundry's local EVM refuses to execute against a Creditcoin fork under `paris` because Substrate/Frontier block headers carry no `prevrandao`, and the script panics before broadcasting. London and Paris compile to the same opcodes for this code; the flag only changes which header fields Foundry's simulator demands.
 
 ## Addresses used
 

@@ -11,12 +11,11 @@ ditebak dari hackathon lain.
 
 ## Yang memblokir submit
 
-Tinggal satu, dan ini bukan soal kualitas, tapi soal apakah submission-nya
-memenuhi syarat.
+Semua syarat wajib sudah terpenuhi.
 
 | # | Blocker | Kenapa fatal | Perbaikan |
 |---|---|---|---|
-| 1 | **Belum di-deploy ke testnet** | Panitia menulis "Must be deployed on a testnet" sebagai project requirement, bukan saran. Tanpa ini submission bisa dianggap tidak memenuhi syarat berapa pun bagusnya kode | Runbook 90 menit di [DEMO.md](DEMO.md). Butuh wallet + faucet |
+| — | Tidak ada | Kontrak sudah di-deploy 13 September. Alamat dan tx hash ada di README bagian *Deployed contracts* | — |
 
 Sudah beres: repo public, situs live di <https://aniwere.vercel.app>, video
 (`video/out/aniwere-demo.mp4`, tinggal upload), README bahasa Inggris,
