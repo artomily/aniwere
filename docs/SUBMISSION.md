@@ -11,18 +11,16 @@ ditebak dari hackathon lain.
 
 ## Yang memblokir submit
 
-Dua hal ini bukan soal kualitas, tapi soal apakah submission-nya sah dan bisa
-dibuka juri. Urut dari yang paling mematikan.
+Tinggal satu, dan ini bukan soal kualitas, tapi soal apakah submission-nya
+memenuhi syarat.
 
 | # | Blocker | Kenapa fatal | Perbaikan |
 |---|---|---|---|
 | 1 | **Belum di-deploy ke testnet** | Panitia menulis "Must be deployed on a testnet" sebagai project requirement, bukan saran. Tanpa ini submission bisa dianggap tidak memenuhi syarat berapa pun bagusnya kode | Runbook 90 menit di [DEMO.md](DEMO.md). Butuh wallet + faucet |
-| 2 | **Repo GitHub masih private** | `github.com/artomily/aniwere` mengembalikan **404** untuk publik. GitHub URL wajib dan harus ada README. Juri akan lihat halaman kosong | Settings → General → Change visibility → Public |
 
-Blocker 2 gratis dan makan waktu 30 detik. Kerjakan sekarang, jangan nanti.
-
-Sudah beres: video (`video/out/aniwere-demo.mp4`, tinggal upload), README
-bahasa Inggris, whitepaper PDF, dan logo.
+Sudah beres: repo public, situs live di <https://aniwere.vercel.app>, video
+(`video/out/aniwere-demo.mp4`, tinggal upload), README bahasa Inggris,
+whitepaper PDF, dan logo.
 
 ---
 
@@ -170,7 +168,26 @@ end the path takes about 8 minutes. We never call it real-time.
 https://github.com/artomily/aniwere
 ```
 
-⚠️ **Masih private — 404 untuk juri.** Jadikan public sebelum submit.
+✅ Public — terverifikasi bisa dibuka tanpa login (13 September).
+
+### Live Demo URL
+
+Kalau form punya field website/demo, atau untuk disebut di Project Description:
+
+```
+https://aniwere.vercel.app
+```
+
+Tanpa kontrak ter-deploy, situs ini berjalan dalam mode contoh yang diberi
+label. Yang tetap nyata: tinggi blok di header dan panel attestation di
+`/proof`, dibaca live dari Sepolia dan Proof Builder di tiap request.
+Setelah deploy, isi `NEXT_PUBLIC_ASC_ADDRESS` dan `NEXT_PUBLIC_PROBE_ADDRESS`
+di Environment Variables Vercel lalu redeploy supaya pindah ke mode live.
+
+Jangan biarkan env var server (`SEPOLIA_RPC_URL`, `CREDITCOIN_RPC_URL`,
+`PROOF_BUILDER_URL`) terisi string kosong di Vercel. Sejak commit 47cf7ac
+kode sudah jatuh ke default untuk nilai kosong, tapi lebih bersih dihapus
+saja kalau tidak dipakai.
 
 ### Project Deck or Whitepaper (PDF URL)
 

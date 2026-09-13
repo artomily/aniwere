@@ -6,6 +6,8 @@
 
 > BUIDL CTC 2026 Fall — DeFi track
 
+**Live demo:** <https://aniwere.vercel.app> — runs in labelled sample mode until the contracts are deployed; block heights and attestation status are always read live.
+
 Indonesian version: [`README.id.md`](README.id.md)
 
 ---
