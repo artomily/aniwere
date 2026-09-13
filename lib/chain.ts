@@ -11,10 +11,14 @@
  * pernah menggantinya diam-diam dengan angka contoh.
  */
 
+import { unstable_rethrow } from "next/navigation";
 import { attestedHeightOf } from "./proofBuilder";
 
-const SEPOLIA_RPC = process.env.SEPOLIA_RPC_URL ?? "https://ethereum-sepolia-rpc.publicnode.com";
-const CREDITCOIN_RPC = process.env.CREDITCOIN_RPC_URL ?? "https://rpc.cc3-testnet.creditcoin.network";
+// `||`, bukan `??`: env var yang dideklarasikan tapi dibiarkan kosong di dashboard
+// hosting bernilai "" — `??` meloloskannya, lalu fetch("") gagal diam-diam dan
+// seluruh panel live terbaca "unreachable".
+const SEPOLIA_RPC = process.env.SEPOLIA_RPC_URL?.trim() || "https://ethereum-sepolia-rpc.publicnode.com";
+const CREDITCOIN_RPC = process.env.CREDITCOIN_RPC_URL?.trim() || "https://rpc.cc3-testnet.creditcoin.network";
 
 /** Rata-rata block time Sepolia, dipakai mengubah selisih blok jadi menit. */
 const SEPOLIA_BLOCK_SECONDS = 12;
@@ -41,11 +45,21 @@ async function rpc(url: string, method: string, params: unknown[]): Promise<stri
       // judulnya "live" lebih buruk daripada tidak ada angka sama sekali.
       cache: "no-store",
     });
-    if (!res.ok) return null;
+    if (!res.ok) {
+      console.error(`[chain] ${method} ${url} -> HTTP ${res.status}`);
+      return null;
+    }
     const body = (await res.json()) as { result?: { number?: string } | string };
     if (typeof body.result === "string") return body.result;
     return body.result?.number ?? null;
-  } catch {
+  } catch (e) {
+    // `fetch` no-store melempar sinyal internal Next saat prerender untuk
+    // menandai route sebagai dinamis. Kalau ikut ditelan di sini, Next mengira
+    // route ini aman dibekukan saat build dan mengirim "unreachable" selamanya.
+    unstable_rethrow(e);
+    // Tetap null ke UI, tapi alasannya harus terlihat di log server —
+    // tanpa ini kegagalan di produksi tidak bisa dibedakan satu sama lain.
+    console.error(`[chain] ${method} ${url} failed:`, (e as Error).message);
     return null;
   }
 }

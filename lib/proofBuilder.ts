@@ -7,11 +7,14 @@
  * satu hal: bentuk JSON di bawah, dan itu ditentukan oleh Attestcoin.
  */
 
+import { unstable_rethrow } from "next/navigation";
+
+// `||` supaya env var yang kosong di dashboard hosting tetap jatuh ke default.
 const PROOF_BUILDER = (
-  process.env.PROOF_BUILDER_URL ?? "https://prover.cc3-testnet.creditcoin.network"
+  process.env.PROOF_BUILDER_URL?.trim() || "https://prover.cc3-testnet.creditcoin.network"
 ).replace(/\/+$/, "");
 
-const CHAIN_KEY = Number(process.env.SOURCE_CHAIN_KEY ?? 1);
+const CHAIN_KEY = Number(process.env.SOURCE_CHAIN_KEY?.trim() || 1);
 
 export type MerkleSibling = { hash: `0x${string}`; isLeft: boolean };
 
@@ -29,7 +32,10 @@ export async function attestedHeightOf(): Promise<number | null> {
     const res = await fetch(`${PROOF_BUILDER}/api/v1/attested-height/${CHAIN_KEY}`, {
       cache: "no-store",
     });
-    if (!res.ok) return null;
+    if (!res.ok) {
+      console.error(`[proofBuilder] attested-height -> HTTP ${res.status}`);
+      return null;
+    }
     const body: unknown = await res.json();
     if (typeof body === "number") return body;
     if (typeof body === "string") return Number(body);
@@ -41,7 +47,10 @@ export async function attestedHeightOf(): Promise<number | null> {
       }
     }
     return null;
-  } catch {
+  } catch (e) {
+    // Lihat catatan yang sama di lib/chain.ts.
+    unstable_rethrow(e);
+    console.error(`[proofBuilder] attested-height failed (${PROOF_BUILDER}):`, (e as Error).message);
     return null;
   }
 }
@@ -71,6 +80,7 @@ export async function fetchProofJson(
 
     return proof;
   } catch (e) {
+    unstable_rethrow(e);
     return { error: (e as Error).message };
   }
 }
