@@ -559,8 +559,8 @@ export const Honest: React.FC = () => {
             lineHeight: 1.5,
           }}
         >
-          Attestation runs ahead of Ethereum&rsquo;s finalized checkpoint — measured 25 to 54 blocks
-          ahead, three times. A reorg is a real residual risk, and it belongs in the limitations.
+          Attestation runs ahead of Ethereum&rsquo;s finalized checkpoint — measured 20 to 54 blocks
+          ahead, four times. A reorg is a real residual risk, and it belongs in the limitations.
         </div>
       </div>
     </AbsoluteFill>

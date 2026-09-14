@@ -153,8 +153,8 @@ changes and the business logic does not.
 
 HONEST LIMITATION
 
-We measured attestation lag three times (27 Aug, 4 Sep, 8 Sep). It consistently runs
-25-54 blocks AHEAD of Ethereum's finalized checkpoint. Attestation does not wait for
+We measured attestation lag four times (27 Aug, 4 Sep, 8 Sep, 13 Sep). It consistently
+runs 20-54 blocks AHEAD of Ethereum's finalized checkpoint. Attestation does not wait for
 finality, so a proof can pass for a block that is theoretically still reorgable. That
 depth is far outside any plausible Ethereum reorg, but "far outside" is not
 "impossible", and we would rather state it than hide behind the word finality. End to
@@ -202,9 +202,7 @@ https://github.com/artomily/aniwere/blob/main/docs/pdf/AniWere-whitepaper.pdf
 Regenerate setelah README berubah:
 
 ```bash
-node /path/ke/build.mjs && \
-  "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless \
-  --no-pdf-header-footer --print-to-pdf=docs/pdf/AniWere-whitepaper.pdf file://.../readme.html
+npm run whitepaper
 ```
 
 ### Prototype Demo Video URL

@@ -263,16 +263,16 @@ The correct framing:
 
 > **Verified one Creditcoin block after the source block is attested — about 8 minutes after it lands on Ethereum.**
 
-Three independent measurements (27 August, 4 September, 8 September) using different instruments. The numbers are practically identical. Details in [`docs/ATTESTCOIN.md`](docs/ATTESTCOIN.md) section 4.
+Four independent measurements (27 August, 4 September, 8 September, 13 September) using different instruments. The lag behind head is practically identical every time. Details in [`docs/ATTESTCOIN.md`](docs/ATTESTCOIN.md) section 4.
 
-We do **not** use the sentence *"within one Creditcoin block of Ethereum finality"*, however well it reads. Attestation measurably runs 25–54 blocks **ahead of** `finalized`, so that sentence would promise a guarantee the protocol does not actually give. The consequence is in the limitations list below, item 2.
+We do **not** use the sentence *"within one Creditcoin block of Ethereum finality"*, however well it reads. Attestation measurably runs 20–54 blocks **ahead of** `finalized`, so that sentence would promise a guarantee the protocol does not actually give. The consequence is in the limitations list below, item 2.
 
 ---
 
 ## Limitations we acknowledge
 
 1. **Snapshots, not a stream.** A verified health factor is true at a specific block. Between two probes we know nothing. This is a direct consequence of the event-proof model.
-2. **Attestation runs ahead of Ethereum finality.** A proof can pass for a block that is theoretically still reorgable. A depth of 25–54 blocks is far outside any plausible Ethereum reorg, but "far outside" is not "impossible", and we would rather write it down than hide behind the word *finality*.
+2. **Attestation runs ahead of Ethereum finality.** A proof can pass for a block that is theoretically still reorgable. A depth of 20–54 blocks is far outside any plausible Ethereum reorg, but "far outside" is not "impossible", and we would rather write it down than hide behind the word *finality*.
 3. **We do not prevent liquidations.** We pay afterwards. Prevention requires Attestcoin Writability, outside this hackathon's scope.
 4. **Flat 2% premium, not risk-priced.** Real pricing needs historical data and quantitative analysis.
 5. **The underwriter side is simplified.** The vault is funded manually. There is no share accounting, lock period, or real underwriting economics yet.
